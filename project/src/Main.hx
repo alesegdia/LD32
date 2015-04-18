@@ -24,6 +24,7 @@ import nape.callbacks.InteractionType;
 import nape.callbacks.InteractionCallback;
 import nape.callbacks.CbType;
 import nape.callbacks.CbEvent;
+import luxe.tilemaps.Tilemap.TileLayer;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
@@ -33,6 +34,7 @@ import Entity.GameWorld;
 import Entity.EntityFactory;
 import Entity.CollisionLayers;
 import Entity.CollisionFilters;
+import Entity.Textures;
 
 class Main extends luxe.Game {
 
@@ -57,7 +59,22 @@ class Main extends luxe.Game {
 		Luxe.physics.nape.space.listeners.add(il);
 	}
 
+	public function TiledLayerToMatrix( tiledLayer : TileLayer ) {
+		var themap:Array<Array<Int>> = new Array<Array<Int>>();
+		for( tilearray in tiledLayer.tiles )
+		{
+			var col:Array<Int> = new Array<Int>();
+			for( tile in tilearray )
+			{
+				col.push(tile.id);
+			}
+			themap.push(col);
+		}
+		return themap;
+	}
+
     override function ready() {
+    	Textures.Prepare();
 		drawer = new DebugDraw();
 		gameWorld = new GameWorld();
 		EntityFactory.world = gameWorld;
@@ -83,17 +100,7 @@ class Main extends luxe.Game {
 		Luxe.loadText('assets/test-map.json', function(res) {
 			tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
 			tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
-
-			var themap:Array<Array<Int>> = new Array<Array<Int>>();
-			for( tilearray in that.tilemap.layers.get("collisionLayer").tiles )
-			{
-				var col:Array<Int> = new Array<Int>();
-				for( tile in tilearray )
-				{
-					col.push(tile.id);
-				}
-				themap.push(col);
-			}
+			var themap = that.TiledLayerToMatrix(that.tilemap.layers.get("collisionLayer"));
 			var strmap:String = "";
 			for( i in 0 ... themap.length )
 			{
