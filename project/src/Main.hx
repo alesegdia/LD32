@@ -29,6 +29,7 @@ import luxe.tilemaps.Tilemap.TileLayer;
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 import Entity.Player;
+import Entity.Door;
 import Entity.Projectile;
 import Entity.GameWorld;
 import Entity.EntityFactory;
@@ -49,10 +50,10 @@ class Main extends luxe.Game {
 	var enemySpawnList : Array<Vector> = new Array<Vector>();
 	var pickupSpawnList : Array<Vector> = new Array<Vector>();
 
-	var upDoorTiles : Array<Vector> = new Array<Vector>();
-	var downDoorTiles : Array<Vector> = new Array<Vector>();
-	var leftDoorTiles : Array<Vector> = new Array<Vector>();
-	var rightDoorTiles : Array<Vector> = new Array<Vector>();
+	var upDoorTiles : Array<Door> = new Array<Door>();
+	var downDoorTiles : Array<Door> = new Array<Door>();
+	var leftDoorTiles : Array<Door> = new Array<Door>();
+	var rightDoorTiles : Array<Door> = new Array<Door>();
 
 	public function projToWall( collision: InteractionCallback ):Void {
 		collision.int1.userData.entity.isDead = true;
@@ -123,6 +124,17 @@ class Main extends luxe.Game {
 		trace(str);
 	}
 
+	public function OpenDoors( doors : Array<Door> ) {
+		for( i in 0 ... doors.length ) {
+			doors[i].Open();
+		}
+	}
+	public function CloseDoors( doors : Array<Door> ) {
+		for( i in 0 ... doors.length ) {
+			doors[i].Close();
+		}
+	}
+
 	public function RegenScene() {
 		gameWorld.Clear();
 		SpawnRandomEnemy();
@@ -173,10 +185,10 @@ class Main extends luxe.Game {
 			trace(doorList.length);
 			for( i in 0 ... doorList.length ) {
 				var v = doorList[i];
-				if( v.x == 0 ) leftDoorTiles.push(v);
-				else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(v);
-				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(v);
-				else downDoorTiles.push(v);
+				if( v.x == 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
+				else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32));
+				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
+				else downDoorTiles.push( new Door(v.x*32, v.y*32) );
 			}
 			trace("left: " + leftDoorTiles);
 			trace("right: " + rightDoorTiles);
@@ -189,6 +201,7 @@ class Main extends luxe.Game {
 
     } //ready
 
+	var doorsClosed = true;
     override function onkeyup( e:KeyEvent ) {
 
         if(e.keycode == Key.escape) {
@@ -196,6 +209,20 @@ class Main extends luxe.Game {
         }
         if( e.keycode == Key.key_k) {
 			RegenScene();
+		}
+        if( e.keycode == Key.key_j) {
+        	doorsClosed = !doorsClosed;
+        	if( doorsClosed ) {
+				OpenDoors(rightDoorTiles);
+				OpenDoors(leftDoorTiles);
+				OpenDoors(upDoorTiles);
+				OpenDoors(downDoorTiles);
+			} else {
+				CloseDoors(rightDoorTiles);
+				CloseDoors(leftDoorTiles);
+				CloseDoors(upDoorTiles);
+				CloseDoors(downDoorTiles);
+			}
 		}
 
     } //onkeyup

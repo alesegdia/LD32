@@ -148,6 +148,38 @@ class EntityFactory {
 	}
 }
 
+class Door extends Entity {
+
+	var isOpened : Bool;
+
+	public function new(x:Float,y:Float) {
+		sprite = new Sprite({
+			texture: Luxe.loadTexture("assets/test-door.png"),
+			uv: new luxe.Rectangle(0,0,32,32),
+			size: new Vector(32,32),
+			pos: new Vector(x+16,y+16)
+		});
+		body = new Body(BodyType.STATIC);
+		body.shapes.add(new Polygon(Polygon.rect(x, y, 32, 32)));
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(CollisionLayers.WALL);
+		body.setShapeFilters(CollisionFilters.WALL);
+	}
+
+	public function Open() {
+		isOpened = true;
+		sprite.uv.x = 32;
+		body.space = null;
+	}
+
+	public function Close() {
+		isOpened = false;
+		sprite.uv.x = 0;
+		body.space = Luxe.physics.nape.space;
+	}
+
+}
+
 class Player extends Entity {
 
 	public var money : Int;
