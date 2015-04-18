@@ -26,17 +26,17 @@ import phoenix.geometry.CircleGeometry;
 class Player {
 
 	var texTorso : Texture;
-	var sprTorso : Sprite;
+	public var sprite : Sprite;
 
 	public function new() {}
 
 	public function Prepare() {
-		texTorso = Luxe.loadTexture('assets/evoswonie-torso.png');
-		sprTorso = new Sprite({
+		texTorso = Luxe.loadTexture('assets/test-player.png');
+		sprite = new Sprite({
 			name: "player",
 			texture: texTorso,
 			pos: Luxe.screen.mid,
-			size: new Vector(106,64)
+			size: new Vector(32,32)
 		});
 	}
 
@@ -48,29 +48,27 @@ class Main extends luxe.Game {
 	var batcher : phoenix.Batcher;
 	var player : Player;
 	public var drawer : DebugDraw;
+	var playerBody : Body;
 
     override function ready() {
-    	player = new Player();
-    	player.Prepare();
     	drawer = new DebugDraw();
     	Luxe.physics.nape.debugdraw = drawer;
 
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 		var that = this;
 		//batcher = Luxe.renderer.create_batcher({ : 
-		Luxe.loadText('assets/test-airplat-floorplat.tmx', function(res) {
-			that.tilemap = new TiledMap({ tiled_file_data: res.text, format: 'tmx', pos: new Vector(0,0) });
-			that.tilemap.display({ scale:2, grid:false, filter:FilterType.nearest });
+		Luxe.loadText('assets/test-map.json', function(res) {
+			that.tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
+			//that.tilemap.display({ scale:1, grid:false, filter:FilterType.nearest });
 
 			var themap:Array<Array<Int>> = new Array<Array<Int>>();
-			for( tilearray in that.tilemap.layers.get("collisionLayer").tiles )
+			for( tilearray in that.tilemap.layers.get("baseLayer").tiles )
 			{
 				var col:Array<Int> = new Array<Int>();
 				for( tile in tilearray )
 				{
-					trace(tile);
-					if( tile.id == 0 ) col.push(0);
-					else col.push(1);
+					if( tile.id == 1 ) col.push(1);
+					else col.push(0);
 				}
 				themap.push(col);
 			}
@@ -93,6 +91,16 @@ class Main extends luxe.Game {
 			trace(strmap);
 		});
 
+    	player = new Player();
+    	player.Prepare();
+
+		playerBody = new Body(BodyType.DYNAMIC);
+		playerBody.shapes.add(new Circle(16));
+		playerBody.position.setxy(200,200);
+		playerBody.space = Luxe.physics.nape.space;
+		drawer.add(playerBody);
+		Luxe.physics.nape.space.gravity.x = 0;
+		Luxe.physics.nape.space.gravity.y = 0;
 		//var collisionLayer = tilemap.layers.get("collisionLayer");
 
     } //ready
@@ -103,10 +111,44 @@ class Main extends luxe.Game {
             Luxe.shutdown();
         }
 
+        switch(e.keycode)
+		{
+			case Key.up: up=false;
+			case Key.down: down=false;
+			case Key.left: left=false;
+			case Key.right: right=false;
+		}
+
     } //onkeyup
 
-    override function update(dt:Float) {
+	var left: Bool;
+	var right: Bool;
+	var up: Bool;
+	var down: Bool;
+    override function onkeydown( e:KeyEvent ) {
 
+        switch(e.keycode)
+		{
+			case Key.up: up=true;
+			case Key.down: down=true;
+			case Key.left: left=true;
+			case Key.right: right=true;
+		}
+
+
+    } //onkeydown
+
+    override function update(dt:Float) {
+    	var speed = 100;
+
+    	if( up ) playerBody.velocity.y = -speed;
+    	else if( down ) playerBody.velocity.y = speed;
+    	else playerBody.velocity.y = 0;
+
+    	if( left ) playerBody.velocity.x = -speed;
+    	else if( right ) playerBody.velocity.x = speed;
+    	else playerBody.velocity.x = 0;
+		player.sprite.transform.pos.set_xy(playerBody.position.x, playerBody.position.y);
     } //update
 
 
