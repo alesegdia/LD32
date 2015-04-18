@@ -264,6 +264,16 @@
   <tile id="0"/>
   <tile id="1"/>
  </tileset>
+ <tileset firstgid="259" name="colorTiles" tilewidth="32" tileheight="32">
+  <image source="colorTiles.png" width="224" height="32"/>
+  <tile id="0"/>
+  <tile id="1"/>
+  <tile id="2"/>
+  <tile id="3"/>
+  <tile id="4"/>
+  <tile id="5"/>
+  <tile id="6"/>
+ </tileset>
  <layer name="collisionLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
    eJxjZGRgYCSAmaCYkDp09ZTiUfMGn3nUMotWeLCH30g0j5rlCwC/UQNL
@@ -276,7 +286,7 @@
  </layer>
  <layer name="spawnLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjYBgF1AZMjNRVNwoGFxiN34EDACDMAA0=
+   eJxjYBgF1AbMjNRVNwoGFxiN34EDACosABE=
   </data>
  </layer>
 </map>
