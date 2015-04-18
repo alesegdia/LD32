@@ -3,6 +3,7 @@ import luxe.Input;
 
 import nape.geom.Vec2;
 import nape.phys.Body;
+import nape.phys.Interactor;
 import nape.phys.BodyType;
 import nape.shape.Polygon;
 import nape.shape.Circle;
@@ -52,13 +53,15 @@ class CollisionLayers {
 	public static var PROJECTILE = new CbType();
 	public static var WALL = new CbType();
 	public static var ENEMY = new CbType();
+	public static var PICKUP = new CbType();
 }
 
 class CollisionFilters {
 	public static var PLAYER = new InteractionFilter( 		 1, ~(2) );
-	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1) );
+	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1|16) );
 	public static var WALL = new InteractionFilter( 	 	 4, ~(0) );
-	public static var ENEMY = new InteractionFilter( 	 	 8, ~(0) );
+	public static var ENEMY = new InteractionFilter( 	 	 8, ~(16) );
+	public static var PICKUP = new InteractionFilter( 	 	 16, ~(8|2) );
 }
 
 class GameWorld {
@@ -113,10 +116,18 @@ class EntityFactory {
 		world.AddEntity(enemy);
 		return enemy;
 	}
+
+	static public function Spawn100EPickup(x, y) {
+		var pickup = new Pickup(x,y,"assets/test-money-pickup.png",function(player){
+			player.money += 100;
+		});
+		return pickup;
+	}
 }
 
 class Player extends Entity {
 
+	public var money : Int;
 	var lastFacing : Vector;
 	var facing : Vector = new Vector(1,0);
 	var nextShot = 0.0;
@@ -215,6 +226,25 @@ class Enemy extends Entity {
 	}
 }
 
+class Pickup extends Entity {
+
+	public function new( x, y, texpath : String, cb : Player -> Void ) {
+		texture = Luxe.loadTexture(texpath);
+		sprite = new Sprite({
+			texture: texture,
+			pos: new Vector(x,y),
+			size: new Vector(32,32)
+		});
+		body = new Body(BodyType.DYNAMIC);
+		body.shapes.add(new Circle(16));
+		body.position.setxy(x,y);
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(CollisionLayers.PICKUP);
+		body.setShapeFilters(CollisionFilters.PICKUP);
+	}
+
+}
+
 class Projectile extends Entity {
 
 	var projectileSpeed = 500;
@@ -222,7 +252,6 @@ class Projectile extends Entity {
 	public function new( pos : Vector, vel : Vector ) {
 		texture = Luxe.loadTexture('assets/test-dollar.png');
 		sprite = new Sprite({
-			name: "dollar",
 			   texture: texture,
 			   pos: pos,
 			   size: new Vector(8,4),

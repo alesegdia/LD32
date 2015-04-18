@@ -59,6 +59,7 @@ class Main extends luxe.Game {
 
     	player = EntityFactory.SpawnPlayer();
     	EntityFactory.SpawnEnemy(300,300);
+    	EntityFactory.Spawn100EPickup(400,400);
 
 		interactionListener = new nape.callbacks.InteractionListener(
 				CbEvent.BEGIN,
