@@ -77,7 +77,7 @@ class Textures {
 }
 
 class GameWorld {
-	var entities : Array<Entity> = new Array<Entity>();
+	public var entities : Array<Entity> = new Array<Entity>();
 	public var debugDraw : DebugDraw;
 	public function new()
 	{
@@ -104,6 +104,16 @@ class GameWorld {
 		for( i in 0 ... toClear.length )
 		{
 			entities.remove(toClear[i]);
+		}
+	}
+	public function Clear() {
+		for( entity in entities )
+		{
+			entity.destroy();
+		}
+		while( entities.length > 0 )
+		{
+			entities.pop();
 		}
 	}
 }

@@ -76,6 +76,7 @@ class Main extends luxe.Game {
 		return themap;
 	}
 
+
 	public function GetNonEmptyTiles( tiledLayer : TileLayer ) {
 		var map = TiledLayerToMatrix( tiledLayer );
 		var tiles : Array<Vector> = new Array<Vector>();
@@ -97,13 +98,13 @@ class Main extends luxe.Game {
 		var n:Int = Math.round(RandomRange(0, enemySpawnList.length));
 		trace(enemySpawnList);
 		var e = enemySpawnList[n];
-		EntityFactory.SpawnEnemy(e.x*32, e.y*32);
+		EntityFactory.SpawnEnemy(e.x*32+16, e.y*32+16);
 	}
 
 	public function SpawnRandomPickup() {
 		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length));
 		var e = pickupSpawnList[n];
-		EntityFactory.Spawn100EPickup(e.x*32, e.y*32);
+		EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
 	}
 
 	public function DebugLayer( layer : TileLayer ) {
@@ -118,6 +119,13 @@ class Main extends luxe.Game {
 		trace(str);
 	}
 
+	public function RegenScene() {
+		gameWorld.Clear();
+		SpawnRandomEnemy();
+		SpawnRandomPickup();
+    	player = EntityFactory.SpawnPlayer();
+	}
+
     override function ready() {
     	Textures.Prepare();
 		drawer = new DebugDraw();
@@ -127,7 +135,6 @@ class Main extends luxe.Game {
     	//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
-    	player = EntityFactory.SpawnPlayer();
     	EntityFactory.SpawnEnemy(300,300);
     	EntityFactory.Spawn100EPickup(400,400);
 
@@ -161,9 +168,7 @@ class Main extends luxe.Game {
 			doorList = GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
 			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
-
-			SpawnRandomEnemy();
-			SpawnRandomPickup();
+			that.RegenScene();
 		});
 
     } //ready
@@ -173,6 +178,9 @@ class Main extends luxe.Game {
         if(e.keycode == Key.escape) {
             Luxe.shutdown();
         }
+        if( e.keycode == Key.key_k) {
+			RegenScene();
+		}
 
     } //onkeyup
 
