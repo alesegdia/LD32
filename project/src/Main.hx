@@ -29,6 +29,9 @@ import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 import Entity.Player;
 import Entity.Projectile;
+import Entity.GameWorld;
+import Entity.EntityFactory;
+import Entity.CollisionLayers;
 
 class Main extends luxe.Game {
 
@@ -36,32 +39,30 @@ class Main extends luxe.Game {
 	public var tileBatcher : phoenix.Batcher;
 	var entityBatcher : phoenix.Batcher;
 	var player : Player;
-	public var drawer : DebugDraw;
 	var interactionListener : InteractionListener;
-	var wallCollision : CbType = new CbType();
-	var playerCollision : CbType = new CbType();
-	var projectileCollision : CbType = new CbType();
 	var proj : Projectile;
+	var gameWorld : GameWorld;
+	var drawer : DebugDraw;
 
 	public function playerToWall( collision: InteractionCallback ):Void {
 		trace("HEY!");
 	}
 
     override function ready() {
-
-    	drawer = new DebugDraw();
-    	Luxe.physics.nape.debugdraw = drawer;
+		drawer = new DebugDraw();
+		gameWorld = new GameWorld();
+		EntityFactory.world = gameWorld;
+		gameWorld.debugDraw = drawer;
+    	Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
-    	player = new Player();
-    	player.Prepare(playerCollision);
-		drawer.add(player.body);
+    	player = EntityFactory.SpawnPlayer();
 
 		interactionListener = new nape.callbacks.InteractionListener(
 				CbEvent.BEGIN,
 				InteractionType.COLLISION,
-				wallCollision,
-				playerCollision,
+				CollisionLayers.WALL,
+				CollisionLayers.PLAYER,
 				playerToWall);
 		Luxe.physics.nape.space.listeners.add(interactionListener);
 		Luxe.physics.nape.space.gravity.x = 0;
@@ -95,8 +96,8 @@ class Main extends luxe.Game {
 						var b = new Body(BodyType.STATIC);
 						b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
 						b.space = Luxe.physics.nape.space;
-						b.cbTypes.add(wallCollision);
-						that.drawer.add(b);
+						b.cbTypes.add(CollisionLayers.WALL);
+						EntityFactory.world.debugDraw.add(b);
 					}
 					strmap += themap[i][j];
 				}
@@ -105,9 +106,7 @@ class Main extends luxe.Game {
 			trace(strmap);
 		});
 
-		proj = new Projectile();
-		proj.Prepare(new Vector(100,100), projectileCollision);
-		drawer.add(proj.body);
+		EntityFactory.SpawnProjectile(100,100);
     } //ready
 
     override function onkeyup( e:KeyEvent ) {
@@ -119,8 +118,7 @@ class Main extends luxe.Game {
     } //onkeyup
 
     override function update(dt:Float) {
-    	player.update();
-    	proj.update();
+    	gameWorld.Step();
     } //update
 
 

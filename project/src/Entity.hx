@@ -39,11 +39,53 @@ class Entity {
 	}
 }
 
+class CollisionLayers {
+	public static var PLAYER = new CbType();
+	public static var PROJECTILE = new CbType();
+	public static var WALL = new CbType();
+}
+
+class GameWorld {
+	var entities : Array<Entity> = new Array<Entity>();
+	public var debugDraw : DebugDraw;
+	public function new()
+	{
+	}
+	public function AddEntity( entity : Entity ) {
+		this.entities.push(entity);
+		this.debugDraw.add(entity.body);
+	}
+	public function Step() {
+		for( entity in entities )
+		{
+			entity.update();
+		}
+	}
+}
+
+class EntityFactory {
+	static public var world : GameWorld;
+
+	static public function SpawnPlayer() {
+		var player = new Player();
+		player.Prepare();
+		world.AddEntity(player);
+		return player;
+	}
+
+	static public function SpawnProjectile(x,y) {
+		var proj = new Projectile();
+		proj.Prepare(new Vector(x,y));
+		world.AddEntity(proj);
+		return proj;
+	}
+}
+
 class Player extends Entity {
 
 	public function new() {}
 
-	public function Prepare( playerCollision : CbType ) {
+	public function Prepare() {
 		texture = Luxe.loadTexture('assets/test-player.png');
 		sprite = new Sprite({
 			name: "player",
@@ -56,7 +98,7 @@ class Player extends Entity {
 		body.shapes.add(new Circle(16));
 		body.position.setxy(200,200);
 		body.space = Luxe.physics.nape.space;
-		body.cbTypes.add(playerCollision);
+		body.cbTypes.add(CollisionLayers.PLAYER);
 
 		Luxe.input.bind_key("left", Key.left);
 		Luxe.input.bind_key("right", Key.right);
@@ -83,7 +125,7 @@ class Projectile extends Entity {
 
 	public function new() {}
 
-	public function Prepare( pos : Vector, projectileCollision : CbType ) {
+	public function Prepare( pos : Vector ) {
 		texture = Luxe.loadTexture('assets/test-dollar.png');
 		sprite = new Sprite({
 			name: "dollar",
@@ -96,7 +138,7 @@ class Projectile extends Entity {
 		body.shapes.add(new Polygon(Polygon.rect(-2,-2,8,4)));
 		body.position.setxy(pos.x, pos.y);
 		body.space = Luxe.physics.nape.space;
-		body.cbTypes.add(projectileCollision);
+		body.cbTypes.add(CollisionLayers.PROJECTILE);
 	}
 
 	override public function update() {
