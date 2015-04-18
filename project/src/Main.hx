@@ -32,6 +32,7 @@ import Entity.Projectile;
 import Entity.GameWorld;
 import Entity.EntityFactory;
 import Entity.CollisionLayers;
+import Entity.CollisionFilters;
 
 class Main extends luxe.Game {
 

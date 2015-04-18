@@ -24,6 +24,7 @@ import nape.callbacks.InteractionType;
 import nape.callbacks.InteractionCallback;
 import nape.callbacks.CbType;
 import nape.callbacks.CbEvent;
+import nape.dynamics.InteractionFilter;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
@@ -43,6 +44,11 @@ class CollisionLayers {
 	public static var PLAYER = new CbType();
 	public static var PROJECTILE = new CbType();
 	public static var WALL = new CbType();
+}
+
+class CollisionFilters {
+	public static var PLAYER = new InteractionFilter( 		 1, ~(2) );
+	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1) );
 }
 
 class GameWorld {
@@ -99,11 +105,13 @@ class Player extends Entity {
 		body.position.setxy(200,200);
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PLAYER);
+		body.setShapeFilters(CollisionFilters.PLAYER);
 
 		Luxe.input.bind_key("left", Key.left);
 		Luxe.input.bind_key("right", Key.right);
 		Luxe.input.bind_key("up", Key.up);
 		Luxe.input.bind_key("down", Key.down);
+		Luxe.input.bind_key("shoot", Key.key_z);
 	}
 
 	override public function update() {
@@ -116,6 +124,10 @@ class Player extends Entity {
     	if( Luxe.input.inputdown("left") ) this.body.velocity.x = -speed;
     	else if( Luxe.input.inputdown("right") ) this.body.velocity.x = speed;
     	else this.body.velocity.x = 0;
+
+		if( Luxe.input.inputdown("shoot") ) {
+			EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y);
+		}
 
 		super.update();
 	}
@@ -139,6 +151,7 @@ class Projectile extends Entity {
 		body.position.setxy(pos.x, pos.y);
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PROJECTILE);
+		body.setShapeFilters(CollisionFilters.PROJECTILE);
 	}
 
 	override public function update() {
