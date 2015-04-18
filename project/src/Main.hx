@@ -27,7 +27,8 @@ import nape.callbacks.CbEvent;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
-import Player;
+import Entity.Player;
+import Entity.Projectile;
 
 class Main extends luxe.Game {
 
@@ -39,6 +40,8 @@ class Main extends luxe.Game {
 	var interactionListener : InteractionListener;
 	var wallCollision : CbType = new CbType();
 	var playerCollision : CbType = new CbType();
+	var projectileCollision : CbType = new CbType();
+	var proj : Projectile;
 
 	public function playerToWall( collision: InteractionCallback ):Void {
 		trace("HEY!");
@@ -102,6 +105,9 @@ class Main extends luxe.Game {
 			trace(strmap);
 		});
 
+		proj = new Projectile();
+		proj.Prepare(new Vector(100,100), projectileCollision);
+		drawer.add(proj.body);
     } //ready
 
     override function onkeyup( e:KeyEvent ) {
@@ -114,6 +120,7 @@ class Main extends luxe.Game {
 
     override function update(dt:Float) {
     	player.update();
+    	proj.update();
     } //update
 
 

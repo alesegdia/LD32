@@ -28,19 +28,26 @@ import nape.callbacks.CbEvent;
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 
-class Player {
-
-	var texPlayer : Texture;
+class Entity {
+	var texture : Texture;
 	public var sprite : Sprite;
 	public var body : Body;
+
+	public function update() {
+		this.sprite.transform.pos.set_xy(this.body.position.x, this.body.position.y);
+		this.sprite.rotation_z = luxe.utils.Maths.degrees(this.body.rotation);
+	}
+}
+
+class Player extends Entity {
 
 	public function new() {}
 
 	public function Prepare( playerCollision : CbType ) {
-		texPlayer = Luxe.loadTexture('assets/test-player.png');
+		texture = Luxe.loadTexture('assets/test-player.png');
 		sprite = new Sprite({
 			name: "player",
-			texture: texPlayer,
+			texture: texture,
 			pos: Luxe.screen.mid,
 			size: new Vector(32,32)
 		});
@@ -57,7 +64,7 @@ class Player {
 		Luxe.input.bind_key("down", Key.down);
 	}
 
-	public function update() {
+	override public function update() {
     	var speed = 100;
 
     	if( Luxe.input.inputdown("up") ) this.body.velocity.y = -speed;
@@ -68,7 +75,31 @@ class Player {
     	else if( Luxe.input.inputdown("right") ) this.body.velocity.x = speed;
     	else this.body.velocity.x = 0;
 
-		this.sprite.transform.pos.set_xy(this.body.position.x, this.body.position.y);
+		super.update();
 	}
 }
 
+class Projectile extends Entity {
+
+	public function new() {}
+
+	public function Prepare( pos : Vector, projectileCollision : CbType ) {
+		texture = Luxe.loadTexture('assets/test-dollar.png');
+		sprite = new Sprite({
+			name: "dollar",
+			   texture: texture,
+			   pos: pos,
+			   size: new Vector(8,4),
+		});
+
+		body = new Body(BodyType.DYNAMIC);
+		body.shapes.add(new Polygon(Polygon.rect(-2,-2,8,4)));
+		body.position.setxy(pos.x, pos.y);
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(projectileCollision);
+	}
+
+	override public function update() {
+		super.update();
+	}
+}
