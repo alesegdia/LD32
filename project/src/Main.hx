@@ -45,8 +45,8 @@ class Main extends luxe.Game {
 	var gameWorld : GameWorld;
 	var drawer : DebugDraw;
 
-	public function playerToWall( collision: InteractionCallback ):Void {
-		trace("HEY!");
+	public function projToWall( collision: InteractionCallback ):Void {
+		collision.int1.userData.entity.isDead = true;
 	}
 
     override function ready() {
@@ -62,9 +62,9 @@ class Main extends luxe.Game {
 		interactionListener = new nape.callbacks.InteractionListener(
 				CbEvent.BEGIN,
 				InteractionType.COLLISION,
+				CollisionLayers.PROJECTILE,
 				CollisionLayers.WALL,
-				CollisionLayers.PLAYER,
-				playerToWall);
+				projToWall);
 		Luxe.physics.nape.space.listeners.add(interactionListener);
 		Luxe.physics.nape.space.gravity.x = 0;
 		Luxe.physics.nape.space.gravity.y = 0;
@@ -98,6 +98,7 @@ class Main extends luxe.Game {
 						b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
 						b.space = Luxe.physics.nape.space;
 						b.cbTypes.add(CollisionLayers.WALL);
+						b.setShapeFilters(CollisionFilters.WALL);
 						EntityFactory.world.debugDraw.add(b);
 					}
 					strmap += themap[i][j];
@@ -107,7 +108,6 @@ class Main extends luxe.Game {
 			trace(strmap);
 		});
 
-		EntityFactory.SpawnProjectile(100,100);
     } //ready
 
     override function onkeyup( e:KeyEvent ) {
