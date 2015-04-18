@@ -70,6 +70,9 @@ class Main extends luxe.Game {
     	EntityFactory.Spawn100EPickup(400,400);
 
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
+		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
+			collision.int1.userData.entity.isDead = true;
+		});
 
 		Luxe.physics.nape.space.gravity.x = 0;
 		Luxe.physics.nape.space.gravity.y = 0;

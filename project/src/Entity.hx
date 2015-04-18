@@ -121,6 +121,7 @@ class EntityFactory {
 		var pickup = new Pickup(x,y,"assets/test-money-pickup.png",function(player){
 			player.money += 100;
 		});
+		world.AddEntity(pickup);
 		return pickup;
 	}
 }
