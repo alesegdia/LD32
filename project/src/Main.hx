@@ -45,6 +45,9 @@ class Main extends luxe.Game {
 	var proj : Projectile;
 	var gameWorld : GameWorld;
 	var drawer : DebugDraw;
+	var doorList : Array<Vector> = new Array<Vector>();
+	var enemySpawnList : Array<Vector> = new Array<Vector>();
+	var pickupSpawnList : Array<Vector> = new Array<Vector>();
 
 	public function projToWall( collision: InteractionCallback ):Void {
 		collision.int1.userData.entity.isDead = true;
@@ -71,6 +74,48 @@ class Main extends luxe.Game {
 			themap.push(col);
 		}
 		return themap;
+	}
+
+	public function GetNonEmptyTiles( tiledLayer : TileLayer ) {
+		var map = TiledLayerToMatrix( tiledLayer );
+		var tiles : Array<Vector> = new Array<Vector>();
+		for( i in 0 ... map.length ) {
+			for( j in 0 ... map[i].length ) {
+				if( map[i][j] != 0 ) {
+					tiles.push(new Vector(j, i));
+				}
+			}
+		};
+		return tiles;
+	}
+
+	public function RandomRange( a, b ) {
+		return (b-a) * Math.random() + a;
+	}
+
+	public function SpawnRandomEnemy() {
+		var n:Int = Math.round(RandomRange(0, enemySpawnList.length));
+		trace(enemySpawnList);
+		var e = enemySpawnList[n];
+		EntityFactory.SpawnEnemy(e.x*32, e.y*32);
+	}
+
+	public function SpawnRandomPickup() {
+		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length));
+		var e = pickupSpawnList[n];
+		EntityFactory.Spawn100EPickup(e.x*32, e.y*32);
+	}
+
+	public function DebugLayer( layer : TileLayer ) {
+		var themap = TiledLayerToMatrix(layer);
+		var str = "";
+		for( i in 0 ... themap.length ) {
+			for( j in 0 ... themap[i].length ) {
+				str += themap[i];
+			}
+			str += "\n";
+		}
+		trace(str);
 	}
 
     override function ready() {
@@ -101,25 +146,24 @@ class Main extends luxe.Game {
 			tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
 			tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
 			var themap = that.TiledLayerToMatrix(that.tilemap.layers.get("collisionLayer"));
-			var strmap:String = "";
-			for( i in 0 ... themap.length )
-			{
-				for( j in 0 ... themap[i].length )
-				{
-					if( themap[i][j] != 0 )
-					{
+			for( i in 0 ... themap.length ) {
+				for( j in 0 ... themap[i].length ) {
+					if( themap[i][j] != 0 ) {
 						var b = new Body(BodyType.STATIC);
 						b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
 						b.space = Luxe.physics.nape.space;
 						b.cbTypes.add(CollisionLayers.WALL);
 						b.setShapeFilters(CollisionFilters.WALL);
 						//EntityFactory.world.debugDraw.add(b);
-					}
-					strmap += themap[i][j];
-				}
-				strmap += "\n";
-			}
-			trace(strmap);
+					}}}
+
+			DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
+			doorList = GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
+			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
+			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
+
+			SpawnRandomEnemy();
+			SpawnRandomPickup();
 		});
 
     } //ready
