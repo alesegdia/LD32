@@ -19,6 +19,11 @@ import luxe.tilemaps.Isometric;
 import luxe.tilemaps.Ortho;
 import luxe.importers.tiled.TiledMap;
 import luxe.importers.tiled.TiledObjectGroup;
+import nape.callbacks.InteractionListener;
+import nape.callbacks.InteractionType;
+import nape.callbacks.InteractionCallback;
+import nape.callbacks.CbType;
+import nape.callbacks.CbEvent;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
@@ -50,12 +55,25 @@ class Main extends luxe.Game {
 	var player : Player;
 	public var drawer : DebugDraw;
 	var playerBody : Body;
+	var interactionListener : InteractionListener;
+	var playerCollision : CbType = new CbType();
+	var wallCollision : CbType = new CbType();
+
+	public function playerToWall( collision: InteractionCallback ):Void {
+		trace("HEY!");
+	}
 
     override function ready() {
     	drawer = new DebugDraw();
     	Luxe.physics.nape.debugdraw = drawer;
-
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
+		interactionListener = new nape.callbacks.InteractionListener(
+				CbEvent.BEGIN,
+				InteractionType.COLLISION,
+				wallCollision,
+				playerCollision,
+				playerToWall);
+		Luxe.physics.nape.space.listeners.add(interactionListener);
 		var that = this;
 		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
 		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
@@ -84,6 +102,7 @@ class Main extends luxe.Game {
 						var b = new Body(BodyType.STATIC);
 						b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
 						b.space = Luxe.physics.nape.space;
+						b.cbTypes.add(wallCollision);
 						that.drawer.add(b);
 					}
 					strmap += themap[i][j];
@@ -100,6 +119,7 @@ class Main extends luxe.Game {
 		playerBody.shapes.add(new Circle(16));
 		playerBody.position.setxy(200,200);
 		playerBody.space = Luxe.physics.nape.space;
+		playerBody.cbTypes.add(playerCollision);
 		drawer.add(playerBody);
 		Luxe.physics.nape.space.gravity.x = 0;
 		Luxe.physics.nape.space.gravity.y = 0;
