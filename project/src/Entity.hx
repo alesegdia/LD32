@@ -44,7 +44,7 @@ class Entity {
 	public function destroy() {
 		this.sprite.destroy();
 		Luxe.physics.nape.space.bodies.remove(this.body);
-		EntityFactory.world.debugDraw.remove(this.body);
+		//EntityFactory.world.debugDraw.remove(this.body);
 	}
 }
 
@@ -73,7 +73,7 @@ class GameWorld {
 	public function AddEntity( entity : Entity ) {
 		this.entities.push(entity);
 		entity.body.userData.entity = entity;
-		this.debugDraw.add(entity.body);
+		//this.debugDraw.add(entity.body);
 	}
 	public function Step() {
 		for( entity in entities )
@@ -133,6 +133,7 @@ class Player extends Entity {
 	var facing : Vector = new Vector(1,0);
 	var nextShot = 0.0;
 	var shotRate = 0.4;
+	var speed = 200;
 
 	public function new() {
 		texture = Luxe.loadTexture('assets/test-player.png');
@@ -159,7 +160,6 @@ class Player extends Entity {
 
 	override public function update() {
 		lastFacing = facing;
-    	var speed = 100;
     	var left:Float = 0;
     	var up:Float = 0;
     	if( Luxe.input.inputdown("up") ) {

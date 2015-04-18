@@ -61,7 +61,7 @@ class Main extends luxe.Game {
 		drawer = new DebugDraw();
 		gameWorld = new GameWorld();
 		EntityFactory.world = gameWorld;
-		gameWorld.debugDraw = drawer;
+		//gameWorld.debugDraw = drawer;
     	//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
@@ -85,13 +85,12 @@ class Main extends luxe.Game {
 			tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
 
 			var themap:Array<Array<Int>> = new Array<Array<Int>>();
-			for( tilearray in that.tilemap.layers.get("baseLayer").tiles )
+			for( tilearray in that.tilemap.layers.get("collisionLayer").tiles )
 			{
 				var col:Array<Int> = new Array<Int>();
 				for( tile in tilearray )
 				{
-					if( tile.id == 1 ) col.push(1);
-					else col.push(0);
+					col.push(tile.id);
 				}
 				themap.push(col);
 			}
@@ -107,7 +106,7 @@ class Main extends luxe.Game {
 						b.space = Luxe.physics.nape.space;
 						b.cbTypes.add(CollisionLayers.WALL);
 						b.setShapeFilters(CollisionFilters.WALL);
-						EntityFactory.world.debugDraw.add(b);
+						//EntityFactory.world.debugDraw.add(b);
 					}
 					strmap += themap[i][j];
 				}
