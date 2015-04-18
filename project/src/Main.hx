@@ -27,25 +27,7 @@ import nape.callbacks.CbEvent;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
-
-class Player {
-
-	var texTorso : Texture;
-	public var sprite : Sprite;
-
-	public function new() {}
-
-	public function Prepare() {
-		texTorso = Luxe.loadTexture('assets/test-player.png');
-		sprite = new Sprite({
-			name: "player",
-			texture: texTorso,
-			pos: Luxe.screen.mid,
-			size: new Vector(32,32)
-		});
-	}
-
-}
+import Player;
 
 class Main extends luxe.Game {
 
@@ -54,19 +36,24 @@ class Main extends luxe.Game {
 	var entityBatcher : phoenix.Batcher;
 	var player : Player;
 	public var drawer : DebugDraw;
-	var playerBody : Body;
 	var interactionListener : InteractionListener;
-	var playerCollision : CbType = new CbType();
 	var wallCollision : CbType = new CbType();
+	var playerCollision : CbType = new CbType();
 
 	public function playerToWall( collision: InteractionCallback ):Void {
 		trace("HEY!");
 	}
 
     override function ready() {
+
     	drawer = new DebugDraw();
     	Luxe.physics.nape.debugdraw = drawer;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
+
+    	player = new Player();
+    	player.Prepare(playerCollision);
+		drawer.add(player.body);
+
 		interactionListener = new nape.callbacks.InteractionListener(
 				CbEvent.BEGIN,
 				InteractionType.COLLISION,
@@ -74,12 +61,15 @@ class Main extends luxe.Game {
 				playerCollision,
 				playerToWall);
 		Luxe.physics.nape.space.listeners.add(interactionListener);
+		Luxe.physics.nape.space.gravity.x = 0;
+		Luxe.physics.nape.space.gravity.y = 0;
+
 		var that = this;
 		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
 		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
 		Luxe.loadText('assets/test-map.json', function(res) {
-			that.tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
-			that.tilemap.display({ batcher: that.tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
+			tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
+			tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
 
 			var themap:Array<Array<Int>> = new Array<Array<Int>>();
 			for( tilearray in that.tilemap.layers.get("baseLayer").tiles )
@@ -112,19 +102,6 @@ class Main extends luxe.Game {
 			trace(strmap);
 		});
 
-    	player = new Player();
-    	player.Prepare();
-
-		playerBody = new Body(BodyType.DYNAMIC);
-		playerBody.shapes.add(new Circle(16));
-		playerBody.position.setxy(200,200);
-		playerBody.space = Luxe.physics.nape.space;
-		playerBody.cbTypes.add(playerCollision);
-		drawer.add(playerBody);
-		Luxe.physics.nape.space.gravity.x = 0;
-		Luxe.physics.nape.space.gravity.y = 0;
-		//var collisionLayer = tilemap.layers.get("collisionLayer");
-
     } //ready
 
     override function onkeyup( e:KeyEvent ) {
@@ -133,44 +110,10 @@ class Main extends luxe.Game {
             Luxe.shutdown();
         }
 
-        switch(e.keycode)
-		{
-			case Key.up: up=false;
-			case Key.down: down=false;
-			case Key.left: left=false;
-			case Key.right: right=false;
-		}
-
     } //onkeyup
 
-	var left: Bool;
-	var right: Bool;
-	var up: Bool;
-	var down: Bool;
-    override function onkeydown( e:KeyEvent ) {
-
-        switch(e.keycode)
-		{
-			case Key.up: up=true;
-			case Key.down: down=true;
-			case Key.left: left=true;
-			case Key.right: right=true;
-		}
-
-
-    } //onkeydown
-
     override function update(dt:Float) {
-    	var speed = 100;
-
-    	if( up ) playerBody.velocity.y = -speed;
-    	else if( down ) playerBody.velocity.y = speed;
-    	else playerBody.velocity.y = 0;
-
-    	if( left ) playerBody.velocity.x = -speed;
-    	else if( right ) playerBody.velocity.x = speed;
-    	else playerBody.velocity.x = 0;
-		player.sprite.transform.pos.set_xy(playerBody.position.x, playerBody.position.y);
+    	player.update();
     } //update
 
 
