@@ -54,10 +54,11 @@ class Main extends luxe.Game {
 		gameWorld = new GameWorld();
 		EntityFactory.world = gameWorld;
 		gameWorld.debugDraw = drawer;
-    	Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
+    	//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
     	player = EntityFactory.SpawnPlayer();
+    	EntityFactory.SpawnEnemy(300,300);
 
 		interactionListener = new nape.callbacks.InteractionListener(
 				CbEvent.BEGIN,

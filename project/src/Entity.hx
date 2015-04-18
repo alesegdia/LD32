@@ -29,10 +29,6 @@ import nape.dynamics.InteractionFilter;
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 
-enum Facing {
-	LEFT; RIGHT; UP; DOWN;
-}
-
 class Entity {
 	var texture : Texture;
 	public var sprite : Sprite;
@@ -55,12 +51,14 @@ class CollisionLayers {
 	public static var PLAYER = new CbType();
 	public static var PROJECTILE = new CbType();
 	public static var WALL = new CbType();
+	public static var ENEMY = new CbType();
 }
 
 class CollisionFilters {
 	public static var PLAYER = new InteractionFilter( 		 1, ~(2) );
 	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1) );
 	public static var WALL = new InteractionFilter( 	 	 4, ~(0) );
+	public static var ENEMY = new InteractionFilter( 	 	 8, ~(0) );
 }
 
 class GameWorld {
@@ -100,27 +98,31 @@ class EntityFactory {
 
 	static public function SpawnPlayer() {
 		var player = new Player();
-		player.Prepare();
 		world.AddEntity(player);
 		return player;
 	}
 
-	static public function SpawnProjectile(x,y, facing:Facing) {
-		var proj = new Projectile();
-		proj.Prepare(new Vector(x,y), facing);
+	static public function SpawnProjectile(x,y, vel:Vector) {
+		var proj = new Projectile(new Vector(x,y), vel);
 		world.AddEntity(proj);
 		return proj;
+	}
+
+	static public function SpawnEnemy(x, y) {
+		var enemy = new Enemy(x, y);
+		world.AddEntity(enemy);
+		return enemy;
 	}
 }
 
 class Player extends Entity {
 
-	public function new() {}
-	var facing : Facing = Facing.LEFT;
+	var lastFacing : Vector;
+	var facing : Vector = new Vector(1,0);
 	var nextShot = 0.0;
 	var shotRate = 0.4;
 
-	public function Prepare() {
+	public function new() {
 		texture = Luxe.loadTexture('assets/test-player.png');
 		sprite = new Sprite({
 			name: "player",
@@ -144,22 +146,34 @@ class Player extends Entity {
 	}
 
 	override public function update() {
+		lastFacing = facing;
     	var speed = 100;
+    	var left:Float = 0;
+    	var up:Float = 0;
     	if( Luxe.input.inputdown("up") ) {
     		this.body.velocity.y = -speed;
-    		this.facing = Facing.UP;
+    		up = -1;
 		} else if( Luxe.input.inputdown("down") ) {
 			this.body.velocity.y = speed;
-    		this.facing = Facing.DOWN;
+    		up = 1;
 		} else this.body.velocity.y = 0;
 
     	if( Luxe.input.inputdown("left") ) {
     		this.body.velocity.x = -speed;
-    		this.facing = Facing.LEFT;
+    		left = -1;
 		} else if( Luxe.input.inputdown("right") ) {
 			this.body.velocity.x = speed;
-    		this.facing = Facing.RIGHT;
+			left = 1;
 		} else this.body.velocity.x = 0;
+
+		if( left == 0 && up == 0 )
+		{
+		}
+		else
+		{
+			facing.x = left;
+			facing.y = up;
+		}
 
 		if( Luxe.input.inputdown("shoot") ) {
 			if( haxe.Timer.stamp() > this.nextShot ) {
@@ -168,6 +182,35 @@ class Player extends Entity {
 			}
 		}
 
+		this.body.rotation = 0;
+		super.update();
+	}
+}
+
+class Enemy extends Entity {
+
+	var facing : Vector = new Vector(0,0);
+
+	public function new( x, y ) {
+		texture = Luxe.loadTexture('assets/test-enemy.png');
+		sprite = new Sprite({
+			name: "enemy",
+			texture: texture,
+			pos: new Vector(x,y),
+			size: new Vector(32,32)
+		});
+
+		body = new Body(BodyType.DYNAMIC);
+		body.shapes.add(new Circle(16));
+		body.position.setxy(x,y);
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(CollisionLayers.ENEMY);
+		body.setShapeFilters(CollisionFilters.ENEMY);
+
+	}
+
+	override public function update() {
+		this.body.rotation = 0;
 		super.update();
 	}
 }
@@ -176,9 +219,7 @@ class Projectile extends Entity {
 
 	var projectileSpeed = 500;
 
-	public function new() {}
-
-	public function Prepare( pos : Vector, facing : Facing ) {
+	public function new( pos : Vector, vel : Vector ) {
 		texture = Luxe.loadTexture('assets/test-dollar.png');
 		sprite = new Sprite({
 			name: "dollar",
@@ -193,12 +234,8 @@ class Projectile extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PROJECTILE);
 		body.setShapeFilters(CollisionFilters.PROJECTILE);
-		switch( facing ) {
-		case Facing.LEFT: body.velocity.x = -projectileSpeed;
-		case Facing.RIGHT: body.velocity.x = projectileSpeed;
-		case Facing.UP: body.velocity.y = -projectileSpeed; body.rotation = luxe.utils.Maths.radians(90);
-		case Facing.DOWN: body.velocity.y = projectileSpeed; body.rotation = luxe.utils.Maths.radians(90);
-		}
+		body.velocity.x = vel.x * projectileSpeed;
+		body.velocity.y = vel.y * projectileSpeed;
 	}
 
 	override public function update() {
