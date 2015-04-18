@@ -259,9 +259,24 @@
   <tile id="254"/>
   <tile id="255"/>
  </tileset>
+ <tileset firstgid="257" name="collision" tilewidth="32" tileheight="32">
+  <image source="../project/assets/test-tiles.png" width="64" height="32"/>
+  <tile id="0"/>
+  <tile id="1"/>
+ </tileset>
+ <layer name="collisionLayer" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjZGRgYCSAmaCYkDp09ZTiUfMGn3nUMotWeLCH30g0j5rlCwC/UQNL
+  </data>
+ </layer>
  <layer name="baseLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJztzK0SglAUReGrgl0FOqJ2EOz8dgXtgPj+j8AKN5zKKRb2zDe7rY0xZosdHPEu9mb5DjjiBE+8j0DRC3FGZF2sK26KXowEdyu1MjwUvRwFSlTiazSK3hMvtOjEv/FR9HoMGPEVP+Gn6K1b98/NRUMLRQ==
+   eJyNkrsOwjAMRS0ec8PCmrKwUhYmngsTRWJhAiQK4v8/gRsllizjhA5HqZL49Lp1R0Qv8AZd5rkCrnAun6dgDTYFPKj/3NmCCZiDE2hFjtKqcan2DGZglXy6tk65KuPMG3vBtwTH5OOedL108r6VPfgO4JrJZ9XzO2vDG3wX8DF8uSzOcErfEyyM+7k+2ePJztiAnfp2XqFdOqP07ynOn+zXiXqZV+INV+hXzp/uS7p1Zq9cDf3On5VD5smd5eavzeToA/fL83cD9wJcU7rzoDh/QzAqrGOKMxD+3aDH/S8RjyzF
+  </data>
+ </layer>
+ <layer name="spawnLayer" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgF1AZMjNRVNwoGFxiN34EDACDMAA0=
   </data>
  </layer>
 </map>
