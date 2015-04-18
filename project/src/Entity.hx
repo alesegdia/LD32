@@ -64,6 +64,18 @@ class CollisionFilters {
 	public static var PICKUP = new InteractionFilter( 	 	 16, ~(8|2) );
 }
 
+class Textures {
+	public static var PROJECTILE;
+	public static var PICKUP;
+	public static var ENEMY;
+	public static function Prepare()
+	{
+		PICKUP = Luxe.loadTexture("assets/test-money-pickup.png");
+		PROJECTILE = Luxe.loadTexture("assets/test-dollar.png");
+		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
+	}
+}
+
 class GameWorld {
 	var entities : Array<Entity> = new Array<Entity>();
 	public var debugDraw : DebugDraw;
@@ -118,7 +130,7 @@ class EntityFactory {
 	}
 
 	static public function Spawn100EPickup(x, y) {
-		var pickup = new Pickup(x,y,"assets/test-money-pickup.png",function(player){
+		var pickup = new Pickup(x,y,Textures.PICKUP,function(player){
 			player.money += 100;
 		});
 		world.AddEntity(pickup);
@@ -204,7 +216,7 @@ class Enemy extends Entity {
 	var facing : Vector = new Vector(0,0);
 
 	public function new( x, y ) {
-		texture = Luxe.loadTexture('assets/test-enemy.png');
+		texture = Textures.ENEMY;
 		sprite = new Sprite({
 			name: "enemy",
 			texture: texture,
@@ -229,13 +241,14 @@ class Enemy extends Entity {
 
 class Pickup extends Entity {
 
-	public function new( x, y, texpath : String, cb : Player -> Void ) {
-		texture = Luxe.loadTexture(texpath);
+	public function new( x, y, tex : Texture, cb : Player -> Void ) {
+		texture = tex;
 		sprite = new Sprite({
 			texture: texture,
 			pos: new Vector(x,y),
 			size: new Vector(32,32)
 		});
+
 		body = new Body(BodyType.DYNAMIC);
 		body.shapes.add(new Circle(16));
 		body.position.setxy(x,y);
@@ -251,13 +264,12 @@ class Projectile extends Entity {
 	var projectileSpeed = 500;
 
 	public function new( pos : Vector, vel : Vector ) {
-		texture = Luxe.loadTexture('assets/test-dollar.png');
+		texture = Textures.PROJECTILE;
 		sprite = new Sprite({
 			   texture: texture,
 			   pos: pos,
 			   size: new Vector(8,4),
 		});
-
 		body = new Body(BodyType.DYNAMIC);
 		body.shapes.add(new Polygon(Polygon.rect(-2,-2,8,4)));
 		body.position.setxy(pos.x, pos.y);
