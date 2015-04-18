@@ -49,6 +49,11 @@ class Main extends luxe.Game {
 	var enemySpawnList : Array<Vector> = new Array<Vector>();
 	var pickupSpawnList : Array<Vector> = new Array<Vector>();
 
+	var upDoorTiles : Array<Vector> = new Array<Vector>();
+	var downDoorTiles : Array<Vector> = new Array<Vector>();
+	var leftDoorTiles : Array<Vector> = new Array<Vector>();
+	var rightDoorTiles : Array<Vector> = new Array<Vector>();
+
 	public function projToWall( collision: InteractionCallback ):Void {
 		collision.int1.userData.entity.isDead = true;
 	}
@@ -96,7 +101,6 @@ class Main extends luxe.Game {
 
 	public function SpawnRandomEnemy() {
 		var n:Int = Math.round(RandomRange(0, enemySpawnList.length));
-		trace(enemySpawnList);
 		var e = enemySpawnList[n];
 		EntityFactory.SpawnEnemy(e.x*32+16, e.y*32+16);
 	}
@@ -166,6 +170,18 @@ class Main extends luxe.Game {
 
 			DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
 			doorList = GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
+			trace(doorList.length);
+			for( i in 0 ... doorList.length ) {
+				var v = doorList[i];
+				if( v.x == 0 ) leftDoorTiles.push(v);
+				else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(v);
+				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(v);
+				else downDoorTiles.push(v);
+			}
+			trace("left: " + leftDoorTiles);
+			trace("right: " + rightDoorTiles);
+			trace("up: " + upDoorTiles);
+			trace("down: " + downDoorTiles);
 			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
 			that.RegenScene();
