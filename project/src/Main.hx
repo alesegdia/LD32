@@ -40,13 +40,21 @@ class Main extends luxe.Game {
 	public var tileBatcher : phoenix.Batcher;
 	var entityBatcher : phoenix.Batcher;
 	var player : Player;
-	var interactionListener : InteractionListener;
 	var proj : Projectile;
 	var gameWorld : GameWorld;
 	var drawer : DebugDraw;
 
 	public function projToWall( collision: InteractionCallback ):Void {
 		collision.int1.userData.entity.isDead = true;
+	}
+
+	public function AddInteractionListener( type1 : CbType, type2 : CbType, cb : InteractionCallback -> Void )
+	{
+		var il = new nape.callbacks.InteractionListener(
+				CbEvent.BEGIN,
+				InteractionType.COLLISION,
+				type1, type2, cb);
+		Luxe.physics.nape.space.listeners.add(il);
 	}
 
     override function ready() {
@@ -61,13 +69,8 @@ class Main extends luxe.Game {
     	EntityFactory.SpawnEnemy(300,300);
     	EntityFactory.Spawn100EPickup(400,400);
 
-		interactionListener = new nape.callbacks.InteractionListener(
-				CbEvent.BEGIN,
-				InteractionType.COLLISION,
-				CollisionLayers.PROJECTILE,
-				CollisionLayers.WALL,
-				projToWall);
-		Luxe.physics.nape.space.listeners.add(interactionListener);
+		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
+
 		Luxe.physics.nape.space.gravity.x = 0;
 		Luxe.physics.nape.space.gravity.y = 0;
 
