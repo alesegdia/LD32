@@ -45,7 +45,8 @@ class Player {
 class Main extends luxe.Game {
 
 	public var tilemap : TiledMap;
-	var batcher : phoenix.Batcher;
+	public var tileBatcher : phoenix.Batcher;
+	var entityBatcher : phoenix.Batcher;
 	var player : Player;
 	public var drawer : DebugDraw;
 	var playerBody : Body;
@@ -56,10 +57,11 @@ class Main extends luxe.Game {
 
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 		var that = this;
-		//batcher = Luxe.renderer.create_batcher({ : 
+		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
+		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
 		Luxe.loadText('assets/test-map.json', function(res) {
 			that.tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
-			//that.tilemap.display({ scale:1, grid:false, filter:FilterType.nearest });
+			that.tilemap.display({ batcher: that.tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
 
 			var themap:Array<Array<Int>> = new Array<Array<Int>>();
 			for( tilearray in that.tilemap.layers.get("baseLayer").tiles )
