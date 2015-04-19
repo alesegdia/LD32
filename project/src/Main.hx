@@ -110,7 +110,11 @@ class Main extends luxe.Game {
 	public function SpawnRandomPickup() {
 		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length));
 		var e = pickupSpawnList[n];
-		EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
+		var r = Math.random();
+		if( r < 0.5 ) EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
+		else if( r < 0.75 ) EntityFactory.Spawn200EPickup(e.x*32+16, e.y*32+16);
+		else if( r < 0.9 ) EntityFactory.Spawn500EPickup(e.x*32+16, e.y*32+16);
+		else EntityFactory.SpawnCreditCardPickup(e.x*32+16, e.y*32+16);
 	}
 
 	public function DebugLayer( layer : TileLayer ) {
@@ -139,7 +143,7 @@ class Main extends luxe.Game {
 	public function RegenScene() {
 		gameWorld.Clear();
 		SpawnRandomEnemy();
-		SpawnRandomPickup();
+		if( Math.random() < 0.70 ) SpawnRandomPickup();
     	player = EntityFactory.SpawnPlayer();
 	}
 

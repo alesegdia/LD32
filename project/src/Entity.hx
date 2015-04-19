@@ -66,11 +66,17 @@ class CollisionFilters {
 
 class Textures {
 	public static var PROJECTILE;
-	public static var PICKUP;
+	public static var PICKUP100;
+	public static var PICKUP200;
+	public static var PICKUP500;
+	public static var PICKUPCC;
 	public static var ENEMY;
 	public static function Prepare()
 	{
-		PICKUP = Luxe.loadTexture("assets/test-money-pickup.png");
+		PICKUP100 = Luxe.loadTexture("assets/moneyStack100.png");
+		PICKUP200 = Luxe.loadTexture("assets/moneyStack200.png");
+		PICKUP500 = Luxe.loadTexture("assets/moneyStack500.png");
+		PICKUPCC = Luxe.loadTexture("assets/creditCard.png");
 		PROJECTILE = Luxe.loadTexture("assets/test-dollar.png");
 		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
 	}
@@ -140,12 +146,37 @@ class EntityFactory {
 	}
 
 	static public function Spawn100EPickup(x, y) {
-		var pickup = new Pickup(x,y,Textures.PICKUP,function(player){
+		var pickup = new Pickup(x,y,Textures.PICKUP100,function(player){
 			player.money += 100;
 		});
 		world.AddEntity(pickup);
 		return pickup;
 	}
+
+	static public function Spawn200EPickup(x, y) {
+		var pickup = new Pickup(x,y,Textures.PICKUP200,function(player){
+			player.money += 200;
+		});
+		world.AddEntity(pickup);
+		return pickup;
+	}
+
+	static public function Spawn500EPickup(x, y) {
+		var pickup = new Pickup(x,y,Textures.PICKUP500,function(player){
+			player.money += 500;
+		});
+		world.AddEntity(pickup);
+		return pickup;
+	}
+
+	static public function SpawnCreditCardPickup(x, y) {
+		var pickup = new Pickup(x,y,Textures.PICKUPCC, function(player){
+			player.leftCreditCard = 5.0;
+		});
+		world.AddEntity(pickup);
+		return pickup;
+	}
+
 }
 
 class Door extends Entity {
@@ -188,6 +219,8 @@ class Player extends Entity {
 	var nextShot = 0.0;
 	var shotRate = 0.4;
 	var speed = 200;
+	var moneyPerShot = 100;
+	public var leftCreditCard : Float;
 
 	public var anim : SpriteAnimation = new SpriteAnimation({ name: 'anim' });
 
