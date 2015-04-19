@@ -276,10 +276,10 @@ class Player extends Entity {
     	var up:Float = 0;
     	if( Luxe.input.inputdown("up") ) {
     		this.body.velocity.y = -speed;
-    		up = -0.5;
+    		up = -0.2;
 		} else if( Luxe.input.inputdown("down") ) {
 			this.body.velocity.y = speed;
-    		up = 0.5;
+    		up = 0.2;
 		} else this.body.velocity.y = 0;
 
     	if( Luxe.input.inputdown("left") ) {
