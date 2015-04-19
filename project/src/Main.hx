@@ -31,6 +31,7 @@ import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 import Entity.Player;
 import Entity.Door;
+import Entity.Pickup;
 import Entity.Projectile;
 import Entity.GameWorld;
 import Entity.EntityFactory;
@@ -183,6 +184,7 @@ class Main extends luxe.Game {
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
 		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
 			collision.int1.userData.entity.isDead = true;
+			(cast(collision.int1.userData.entity, Pickup)).cb(player);
 		});
 
 		Luxe.physics.nape.space.gravity.x = 0;

@@ -198,7 +198,7 @@ class EntityFactory {
 
 	static public function SpawnCreditCardPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUPCC, function(player){
-			player.leftCreditCard = 5.0;
+			player.gotCreditCard = true;
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
 				texture: Textures.PICKUPCC,
@@ -260,7 +260,8 @@ class Player extends Entity {
 	var shotRate = 0.4;
 	var speed = 200;
 	public var moneyPerShot = 100;
-	public var leftCreditCard : Float;
+	public var leftCreditCard : Float = haxe.Timer.stamp();
+	public var gotCreditCard : Bool = false;
 
 	public var inUseWeapon : Sprite;
 	var text : Text;
@@ -329,6 +330,15 @@ class Player extends Entity {
 
 	override public function update() {
 
+		if( gotCreditCard ) {
+			leftCreditCard = haxe.Timer.stamp() + 5.0;
+			gotCreditCard = false;
+		}
+		if( haxe.Timer.stamp() > this.leftCreditCard ) {
+			this.shotRate = 0.4;
+		} else {
+			this.shotRate = 0.05;
+		}
     	text.text = money + "€";
     	var doShot = Luxe.input.inputdown("shoot");
 
@@ -376,7 +386,7 @@ class Player extends Entity {
 
 		if( doShot ) {
 			if( haxe.Timer.stamp() > this.nextShot ) {
-				this.money -= this.moneyPerShot;
+				if( haxe.Timer.stamp() > this.leftCreditCard ) this.money -= this.moneyPerShot;
 				this.nextShot = haxe.Timer.stamp() + this.shotRate;
 				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y, facing);
 			}
@@ -426,6 +436,7 @@ class Enemy extends Entity {
 
 class Pickup extends Entity {
 
+	public var cb : Player -> Void;
 	public function new( x, y, tex : Texture, cb : Player -> Void ) {
 		texture = tex;
 		sprite = new Sprite({
@@ -440,6 +451,7 @@ class Pickup extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PICKUP);
 		body.setShapeFilters(CollisionFilters.PICKUP);
+		this.cb = cb;
 	}
 
 }
