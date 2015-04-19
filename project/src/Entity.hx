@@ -189,14 +189,39 @@ class Player extends Entity {
 	var shotRate = 0.4;
 	var speed = 200;
 
+	public var anim : SpriteAnimation = new SpriteAnimation({ name: 'anim' });
+
 	public function new() {
-		texture = Luxe.loadTexture('assets/test-player.png');
+		texture = Luxe.loadTexture('assets/player-walk.png');
 		sprite = new Sprite({
 			name: "player",
-			texture: texture,
-			pos: Luxe.screen.mid,
-			size: new Vector(32,32)
+			   texture: texture,
+			   pos: Luxe.screen.mid,
+			   size: new Vector(32,64),
+
 		});
+
+		sprite.add(anim);
+		sprite.flipx = true;
+		var animJson = '{
+			"thiefWalk" : {
+				"frame_size" : { "x":"32", "y":"64" },
+					"frameset" : [ "1-4" ],
+					"loop" : "true",
+					"speed" : "12",
+					"filter_type" : "nearest"
+			},
+			"thiefStand" : {
+				"frame_size" : { "x":"32", "y":"64" },
+					"frameset" : [ "2" ],
+					"loop" : "true",
+					"speed" : "12",
+					"filter_type" : "nearest"
+			}
+		}';
+		anim.add_from_json(animJson);
+		anim.animation = "thiefWalk";
+		anim.play();
 
 		body = new Body(BodyType.DYNAMIC);
 		body.shapes.add(new Circle(16));
@@ -218,25 +243,33 @@ class Player extends Entity {
     	var up:Float = 0;
     	if( Luxe.input.inputdown("up") ) {
     		this.body.velocity.y = -speed;
-    		up = -1;
+    		up = -0.5;
 		} else if( Luxe.input.inputdown("down") ) {
 			this.body.velocity.y = speed;
-    		up = 1;
+    		up = 0.5;
 		} else this.body.velocity.y = 0;
 
     	if( Luxe.input.inputdown("left") ) {
     		this.body.velocity.x = -speed;
     		left = -1;
+    		sprite.flipx = true;
 		} else if( Luxe.input.inputdown("right") ) {
 			this.body.velocity.x = speed;
 			left = 1;
+    		sprite.flipx = false;
 		} else this.body.velocity.x = 0;
 
 		if( left == 0 && up == 0 )
 		{
+			if( anim.animation != "thiefStand" ) {
+				anim.animation = "thiefStand";
+			}
 		}
 		else
 		{
+			if( anim.animation != "thiefWalk" ) {
+				anim.animation = "thiefWalk";
+			}
 			facing.x = left;
 			facing.y = up;
 		}

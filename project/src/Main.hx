@@ -9,6 +9,7 @@ import nape.shape.Circle;
 import nape.constraint.PivotJoint;
 
 import luxe.AppConfig;
+import luxe.Parcel;
 import luxe.physics.nape.DebugDraw;
 import luxe.Vector;
 import luxe.Color;
@@ -143,6 +144,11 @@ class Main extends luxe.Game {
 	}
 
     override function ready() {
+    	var preload = new Parcel();
+    	preload.add_texture("assets/player-walk.png");
+    	preload.add_texture("assets/test-door.png");
+    	preload.load();
+
     	Textures.Prepare();
 		drawer = new DebugDraw();
 		gameWorld = new GameWorld();
@@ -190,10 +196,6 @@ class Main extends luxe.Game {
 				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
 				else downDoorTiles.push( new Door(v.x*32, v.y*32) );
 			}
-			trace("left: " + leftDoorTiles);
-			trace("right: " + rightDoorTiles);
-			trace("up: " + upDoorTiles);
-			trace("down: " + downDoorTiles);
 			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
 			that.RegenScene();
