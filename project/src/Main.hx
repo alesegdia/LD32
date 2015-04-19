@@ -187,7 +187,6 @@ class Main extends luxe.Game {
 			var enem = cast(collision.int2.userData.entity);
 			proj.isDead = true;
 			enem.health = enem.health - proj.power;
-			if( enem.health <= 0 ) enem.isDead = true;
 		});
 		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
 			collision.int1.userData.entity.isDead = true;
