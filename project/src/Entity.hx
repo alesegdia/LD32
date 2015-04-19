@@ -75,6 +75,7 @@ class Textures {
 	public static var PICKUP500;
 	public static var PICKUPCC;
 	public static var ENEMY;
+	public static var HAPPY;
 	public static function Prepare()
 	{
 		PICKUP100 = Luxe.loadTexture("assets/moneyStack100.png");
@@ -85,6 +86,7 @@ class Textures {
 		PROJECTILE200 = Luxe.loadTexture("assets/projectile200.png");
 		PROJECTILE500 = Luxe.loadTexture("assets/projectile500.png");
 		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
+		HAPPY = Luxe.loadTexture("assets/happyBubble.png");
 	}
 }
 
@@ -416,14 +418,24 @@ class Enemy extends Entity {
 	var attackPower : Int = 10000;
 	var nextAttack : Float = haxe.Timer.stamp();
 
+	var happySprite : Sprite;
+
 	public function new( x, y ) {
 		texture = Textures.ENEMY;
 		sprite = new Sprite({
-			name: "enemy",
 			texture: texture,
 			pos: new Vector(x,y),
 			size: new Vector(32,32)
 		});
+
+		happySprite = new Sprite({
+			texture: Textures.HAPPY,
+			pos: new Vector(0,0),
+			size: new Vector(32,32)
+		});
+		happySprite.visible = false;
+
+		happySprite.parent = sprite;
 
 		body = new Body(BodyType.DYNAMIC);
 		body.shapes.add(new Circle(16));
@@ -479,6 +491,7 @@ class Enemy extends Entity {
 		{
 			body.velocity.x *= 0.95;
 			body.velocity.y *= 0.95;
+			happySprite.visible = true;
 		}
 
 		super.update();

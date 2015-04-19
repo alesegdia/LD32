@@ -240,29 +240,63 @@ class Main extends luxe.Game {
 				player.body.position.x = 40;
 				player.body.position.y = Luxe.screen.h/2;
 				CloseAllDoors();
-			}
-			dist = luxe.Vector.Subtract(leftDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			} else {
+			dist = luxe.Vector.Subtract(rightDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
 			if( dist < 10 ) {
+				RegenScene(false);
+				trace(leftDoorTiles[0].body.position);
+				player.body.position.x = 40;
+				player.body.position.y = Luxe.screen.h/2;
+				CloseAllDoors();
+			}
+			}
+
+			dist = luxe.Vector.Subtract(leftDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 32 ) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32 - 40;
+				player.body.position.y = Luxe.screen.h/2;
+				CloseAllDoors();
+			} else {
+			dist = luxe.Vector.Subtract(leftDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 32 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32 - 40;
 				player.body.position.y = Luxe.screen.h/2;
 				CloseAllDoors();
 			}
+			}
 
 			dist = luxe.Vector.Subtract(upDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 10 ) {
+			if( dist < 32) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32/2;
+				player.body.position.y = 54;
+				CloseAllDoors();
+			} else {
+			dist = luxe.Vector.Subtract(upDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 32 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32/2;
 				player.body.position.y = 54;
 				CloseAllDoors();
 			}
+			}
 
 			dist = luxe.Vector.Subtract(downDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 10 ) {
+			if( dist < 32 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32/2;
 				player.body.position.y = Luxe.screen.h - 54;
 				CloseAllDoors();
+			} else {
+			dist = luxe.Vector.Subtract(downDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 32 ) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32/2;
+				player.body.position.y = Luxe.screen.h - 54;
+				CloseAllDoors();
+			}
 			}
 		}
 	}
