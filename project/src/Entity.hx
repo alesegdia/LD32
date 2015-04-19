@@ -26,6 +26,7 @@ import nape.callbacks.InteractionCallback;
 import nape.callbacks.CbType;
 import nape.callbacks.CbEvent;
 import nape.dynamics.InteractionFilter;
+import luxe.Text;
 
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
@@ -134,7 +135,10 @@ class EntityFactory {
 	}
 
 	static public function SpawnProjectile(x,y, vel:Vector) {
-		var proj = new Projectile(new Vector(x,y), vel);
+		var vy : Float = 0;
+		if( vel.y > 0 ) vy = 0.5;
+		else if( vel.y < 0 ) vy = -0.5;
+		var proj = new Projectile(new Vector(x,y), vel.x, 0);
 		world.AddEntity(proj);
 		return proj;
 	}
@@ -148,6 +152,13 @@ class EntityFactory {
 	static public function Spawn100EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP100,function(player){
 			player.moneyPerShot = 100;
+			player.inUseWeapon.destroy();
+			player.inUseWeapon = new Sprite({
+				texture: Textures.PICKUP100,
+				uv: new luxe.Rectangle(0,0,32,32),
+				size: new Vector(32,32),
+				pos: new Vector(20,20)
+			});
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -156,6 +167,13 @@ class EntityFactory {
 	static public function Spawn200EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP200,function(player){
 			player.moneyPerShot = 200;
+			player.inUseWeapon.destroy();
+			player.inUseWeapon = new Sprite({
+				texture: Textures.PICKUP200,
+				uv: new luxe.Rectangle(0,0,32,32),
+				size: new Vector(32,32),
+				pos: new Vector(20,20)
+			});
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -164,6 +182,13 @@ class EntityFactory {
 	static public function Spawn500EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP500,function(player){
 			player.moneyPerShot = 500;
+			player.inUseWeapon.destroy();
+			player.inUseWeapon = new Sprite({
+				texture: Textures.PICKUP500,
+				uv: new luxe.Rectangle(0,0,32,32),
+				size: new Vector(32,32),
+				pos: new Vector(20,20)
+			});
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -172,6 +197,13 @@ class EntityFactory {
 	static public function SpawnCreditCardPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUPCC, function(player){
 			player.leftCreditCard = 5.0;
+			player.inUseWeapon.destroy();
+			player.inUseWeapon = new Sprite({
+				texture: Textures.PICKUPCC,
+				uv: new luxe.Rectangle(0,0,32,32),
+				size: new Vector(32,32),
+				pos: new Vector(20,20)
+			});
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -213,14 +245,17 @@ class Door extends Entity {
 
 class Player extends Entity {
 
-	public var money : Int;
+	public var money : Int = 1000000;
 	var lastFacing : Vector;
 	var facing : Vector = new Vector(1,0);
 	var nextShot = 0.0;
 	var shotRate = 0.4;
 	var speed = 200;
-	var moneyPerShot = 100;
+	public var moneyPerShot = 100;
 	public var leftCreditCard : Float;
+
+	public var inUseWeapon : Sprite;
+	var text : Text;
 
 	public var anim : SpriteAnimation = new SpriteAnimation({ name: 'anim' });
 
@@ -268,9 +303,26 @@ class Player extends Entity {
 		Luxe.input.bind_key("up", Key.up);
 		Luxe.input.bind_key("down", Key.down);
 		Luxe.input.bind_key("shoot", Key.key_z);
+
+		// GUI
+    	text = new Text({
+			pos: new Vector(48,4),
+			point_size: 20,
+			text: "0€"
+		});
+		inUseWeapon = new Sprite({
+			texture: Textures.PICKUP500,
+			uv: new luxe.Rectangle(0,0,32,32),
+			size: new Vector(32,32),
+			pos: new Vector(20,20)
+		});
 	}
 
 	override public function update() {
+
+    	text.text = money + "€";
+    	var doShot = Luxe.input.inputdown("shoot");
+
 		lastFacing = facing;
     	var left:Float = 0;
     	var up:Float = 0;
@@ -282,14 +334,16 @@ class Player extends Entity {
     		up = 0.2;
 		} else this.body.velocity.y = 0;
 
-    	if( Luxe.input.inputdown("left") ) {
-    		this.body.velocity.x = -speed;
-    		left = -1;
-    		sprite.flipx = true;
+		if( doShot ) speed = 100;
+		else speed = 200;
+		if( Luxe.input.inputdown("left") ) {
+			this.body.velocity.x = -speed;
+			left = -1;
+			if( !doShot ) sprite.flipx = true;
 		} else if( Luxe.input.inputdown("right") ) {
 			this.body.velocity.x = speed;
 			left = 1;
-    		sprite.flipx = false;
+			if( !doShot ) sprite.flipx = false;
 		} else this.body.velocity.x = 0;
 
 		if( left == 0 && up == 0 )
@@ -303,12 +357,17 @@ class Player extends Entity {
 			if( anim.animation != "thiefWalk" ) {
 				anim.animation = "thiefWalk";
 			}
-			facing.x = left;
-			facing.y = up;
+			if( !doShot )
+			{
+				if( left == 0 || facing.x == 0 ) facing.x = lastFacing.x;
+				else facing.x = left;
+				facing.y = up;
+			}
 		}
 
-		if( Luxe.input.inputdown("shoot") ) {
+		if( doShot ) {
 			if( haxe.Timer.stamp() > this.nextShot ) {
+				this.money -= this.moneyPerShot;
 				this.nextShot = haxe.Timer.stamp() + this.shotRate;
 				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y, facing);
 			}
@@ -371,7 +430,7 @@ class Projectile extends Entity {
 
 	var projectileSpeed = 500;
 
-	public function new( pos : Vector, vel : Vector ) {
+	public function new( pos : Vector, velx : Float, vely : Float) {
 		texture = Textures.PROJECTILE;
 		sprite = new Sprite({
 			   texture: texture,
@@ -384,8 +443,8 @@ class Projectile extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PROJECTILE);
 		body.setShapeFilters(CollisionFilters.PROJECTILE);
-		body.velocity.x = vel.x * projectileSpeed;
-		body.velocity.y = vel.y * projectileSpeed;
+		body.velocity.x = velx * projectileSpeed;
+		body.velocity.y = vely * projectileSpeed;
 	}
 
 	override public function update() {
