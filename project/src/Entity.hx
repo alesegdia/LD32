@@ -245,6 +245,7 @@ class Door extends Entity {
 
 class Player extends Entity {
 
+	public static var position : Vec2 = new Vec2(0,0);
 	public var money : Int = 1000000;
 	var lastFacing : Vector;
 	var facing : Vector = new Vector(1,0);
@@ -375,6 +376,8 @@ class Player extends Entity {
 
 		this.body.rotation = 0;
 		super.update();
+		Player.position.x = this.body.position.x;
+		Player.position.y = this.body.position.y;
 	}
 }
 
@@ -400,8 +403,19 @@ class Enemy extends Entity {
 
 	}
 
+	var speed = 1.5;
+	var finalVelocity : Vec2 = new Vec2(0,0);
 	override public function update() {
+		trace("HUH");
 		this.body.rotation = 0;
+		trace(Player.position);
+		trace(this.body.position);
+		finalVelocity.x = this.body.position.x - Player.position.x;
+		finalVelocity.y = this.body.position.y - Player.position.y;
+		trace(finalVelocity);
+		this.body.velocity = finalVelocity;
+		this.body.velocity.x = -this.body.velocity.x * speed;
+		this.body.velocity.y = -this.body.velocity.y * speed;
 		super.update();
 	}
 }

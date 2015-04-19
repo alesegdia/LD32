@@ -230,6 +230,9 @@ class Main extends luxe.Game {
 				CloseDoors(downDoorTiles);
 			}
 		}
+		if( e.keycode == Key.key_p) {
+			SpawnRandomEnemy();
+		}
 
     } //onkeyup
 
