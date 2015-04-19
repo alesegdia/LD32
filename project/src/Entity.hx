@@ -257,6 +257,7 @@ class Door extends Entity {
 class Player extends Entity {
 
 	public static var position : Vec2 = new Vec2(0,0);
+	public static var damageDealt : Int = 0;
 	public var money : Int = 1000000;
 	var lastFacing : Vector;
 	var facing : Vector = new Vector(1,0);
@@ -396,6 +397,10 @@ class Player extends Entity {
 			}
 		}
 
+		if( Player.damageDealt != 0 ) {
+			this.money -= Player.damageDealt;
+			Player.damageDealt = 0;
+		}
 		this.body.rotation = 0;
 		super.update();
 		Player.position.x = this.body.position.x;
@@ -407,6 +412,9 @@ class Enemy extends Entity {
 
 	var facing : Vector = new Vector(0,0);
 	var health : Int = 1000;
+	var attackRate : Float = 0.5;
+	var attackPower : Int = 10000;
+	var nextAttack : Float = haxe.Timer.stamp();
 
 	public function new( x, y ) {
 		texture = Textures.ENEMY;
@@ -426,16 +434,45 @@ class Enemy extends Entity {
 
 	}
 
-	var speedx = 100;
-	var speedy = 70;
+	var speedx = 150;
+	var speedy = 120;
 	var finalVelocity : Vec2 = new Vec2(0,0);
 	override public function update() {
+		var ray = nape.geom.Ray.fromSegment(body.position, Player.position);
+		ray.maxDistance = 500;
+		var rayResult = Luxe.physics.nape.space.rayCast(ray);
+		var playerInSight = false;
+		if( rayResult != null ) {
+			if( rayResult.shape.filter == CollisionFilters.PLAYER ) {
+				playerInSight = true;
+			}
+		}
 		this.body.rotation = 0;
-		finalVelocity.x = this.body.position.x - Player.position.x;
-		finalVelocity.y = this.body.position.y - Player.position.y;
-		this.body.velocity = finalVelocity.normalise();
-		this.body.velocity.x = -this.body.velocity.x * speedx;
-		this.body.velocity.y = -this.body.velocity.y * speedy;
+		if( playerInSight ) {
+			finalVelocity.x = this.body.position.x - Player.position.x;
+			finalVelocity.y = this.body.position.y - Player.position.y;
+			this.body.velocity = finalVelocity.normalise();
+			this.body.velocity.x = -this.body.velocity.x * speedx;
+			this.body.velocity.y = -this.body.velocity.y * speedy;
+		} else {
+			this.body.velocity.x = 0;
+			this.body.velocity.y = 0;
+		}
+
+		var playerNear = false;
+		ray = nape.geom.Ray.fromSegment(body.position, Player.position);
+		ray.maxDistance = 40;
+		rayResult = Luxe.physics.nape.space.rayCast(ray);
+		if( rayResult != null ) {
+			if( rayResult.shape.filter == CollisionFilters.PLAYER ) {
+				playerNear = true;
+			}
+		}
+		if( playerNear && nextAttack < haxe.Timer.stamp() ) {
+			Player.damageDealt += attackPower;
+			nextAttack = haxe.Timer.stamp() + attackRate;
+		}
+
 		super.update();
 	}
 }
