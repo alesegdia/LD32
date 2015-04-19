@@ -182,6 +182,13 @@ class Main extends luxe.Game {
     	EntityFactory.Spawn100EPickup(400,400);
 
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
+		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
+			var proj = cast(collision.int1.userData.entity);
+			var enem = cast(collision.int2.userData.entity);
+			proj.isDead = true;
+			enem.health = enem.health - proj.power;
+			if( enem.health <= 0 ) enem.isDead = true;
+		});
 		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
 			collision.int1.userData.entity.isDead = true;
 			(cast(collision.int1.userData.entity, Pickup)).cb(player);

@@ -67,7 +67,9 @@ class CollisionFilters {
 }
 
 class Textures {
-	public static var PROJECTILE;
+	public static var PROJECTILE100;
+	public static var PROJECTILE200;
+	public static var PROJECTILE500;
 	public static var PICKUP100;
 	public static var PICKUP200;
 	public static var PICKUP500;
@@ -79,7 +81,9 @@ class Textures {
 		PICKUP200 = Luxe.loadTexture("assets/moneyStack200.png");
 		PICKUP500 = Luxe.loadTexture("assets/moneyStack500.png");
 		PICKUPCC = Luxe.loadTexture("assets/creditCard.png");
-		PROJECTILE = Luxe.loadTexture("assets/test-dollar.png");
+		PROJECTILE100 = Luxe.loadTexture("assets/projectile100.png");
+		PROJECTILE200 = Luxe.loadTexture("assets/projectile200.png");
+		PROJECTILE500 = Luxe.loadTexture("assets/projectile500.png");
 		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
 	}
 }
@@ -136,11 +140,11 @@ class EntityFactory {
 		return player;
 	}
 
-	static public function SpawnProjectile(x,y, vel:Vector) {
+	static public function SpawnProjectile(x,y, vel:Vector, moneyPerShot:Int, flip:Bool) {
 		var vy : Float = 0;
 		if( vel.y > 0 ) vy = 0.5;
 		else if( vel.y < 0 ) vy = -0.5;
-		var proj = new Projectile(new Vector(x,y), vel.x, 0);
+		var proj = new Projectile(new Vector(x,y), vel.x, 0, moneyPerShot, flip);
 		world.AddEntity(proj);
 		return proj;
 	}
@@ -345,16 +349,16 @@ class Player extends Entity {
 		lastFacing = facing;
     	var left:Float = 0;
     	var up:Float = 0;
+		if( doShot ) speed = 100;
+		else speed = 200;
     	if( Luxe.input.inputdown("up") ) {
-    		this.body.velocity.y = -speed;
+    		this.body.velocity.y = -speed * 0.7;
     		up = -0.2;
 		} else if( Luxe.input.inputdown("down") ) {
-			this.body.velocity.y = speed;
+			this.body.velocity.y = speed * 0.7;
     		up = 0.2;
 		} else this.body.velocity.y = 0;
 
-		if( doShot ) speed = 100;
-		else speed = 200;
 		if( Luxe.input.inputdown("left") ) {
 			this.body.velocity.x = -speed;
 			left = -1;
@@ -388,7 +392,7 @@ class Player extends Entity {
 			if( haxe.Timer.stamp() > this.nextShot ) {
 				if( haxe.Timer.stamp() > this.leftCreditCard ) this.money -= this.moneyPerShot;
 				this.nextShot = haxe.Timer.stamp() + this.shotRate;
-				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y, facing);
+				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y, facing, moneyPerShot, sprite.flipx);
 			}
 		}
 
@@ -402,6 +406,7 @@ class Player extends Entity {
 class Enemy extends Entity {
 
 	var facing : Vector = new Vector(0,0);
+	var health : Int = 1000;
 
 	public function new( x, y ) {
 		texture = Textures.ENEMY;
@@ -421,15 +426,16 @@ class Enemy extends Entity {
 
 	}
 
-	var speed = 1.5;
+	var speedx = 100;
+	var speedy = 70;
 	var finalVelocity : Vec2 = new Vec2(0,0);
 	override public function update() {
 		this.body.rotation = 0;
 		finalVelocity.x = this.body.position.x - Player.position.x;
 		finalVelocity.y = this.body.position.y - Player.position.y;
-		this.body.velocity = finalVelocity;
-		this.body.velocity.x = -this.body.velocity.x * speed;
-		this.body.velocity.y = -this.body.velocity.y * speed;
+		this.body.velocity = finalVelocity.normalise();
+		this.body.velocity.x = -this.body.velocity.x * speedx;
+		this.body.velocity.y = -this.body.velocity.y * speedy;
 		super.update();
 	}
 }
@@ -459,14 +465,19 @@ class Pickup extends Entity {
 class Projectile extends Entity {
 
 	var projectileSpeed = 500;
+	public var power:Int;
 
-	public function new( pos : Vector, velx : Float, vely : Float) {
-		texture = Textures.PROJECTILE;
+	public function new( pos : Vector, velx : Float, vely : Float, moneyPerShot:Int, flip:Bool ) {
+		if( moneyPerShot == 100 ) texture = Textures.PROJECTILE100;
+		if( moneyPerShot == 200 ) texture = Textures.PROJECTILE200;
+		if( moneyPerShot == 500 ) texture = Textures.PROJECTILE500;
+		power = moneyPerShot;
 		sprite = new Sprite({
 			   texture: texture,
 			   pos: pos,
-			   size: new Vector(8,4),
+			   size: new Vector(32,32),
 		});
+		sprite.flipx = flip;
 		body = new Body(BodyType.DYNAMIC);
 		body.shapes.add(new Polygon(Polygon.rect(-2,-2,8,4)));
 		body.position.setxy(pos.x, pos.y);
