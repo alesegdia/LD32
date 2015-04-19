@@ -379,8 +379,13 @@ class Player extends Entity {
 		lastFacing = facing;
     	var left:Float = 0;
     	var up:Float = 0;
-		if( doShot ) speed = 100;
-		else speed = 200;
+		if( doShot ) {
+			speed = 100;
+			anim.speed = 6;
+		} else {
+			anim.speed = 12;
+			speed = 200;
+		}
     	if( Luxe.input.inputdown("up") ) {
     		this.body.velocity.y = -speed * 0.7;
     		up = -0.2;

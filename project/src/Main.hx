@@ -10,6 +10,7 @@ import nape.constraint.PivotJoint;
 
 import luxe.AppConfig;
 import luxe.Parcel;
+import luxe.ParcelProgress;
 import luxe.physics.nape.DebugDraw;
 import luxe.Vector;
 import luxe.Color;
@@ -170,77 +171,88 @@ class Main extends luxe.Game {
 	}
 
     override function ready() {
-    	var preload = new Parcel();
-    	preload.add_texture("assets/player-walk.png");
-    	preload.add_texture("assets/test-door.png");
-    	preload.load();
+		Luxe.loadJSON('assets/parcel.json', function(json_asset) {
 
-    	Textures.Prepare();
-		drawer = new DebugDraw();
-		gameWorld = new GameWorld();
-		EntityFactory.world = gameWorld;
-		//gameWorld.debugDraw = drawer;
-    	//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
-		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
+			var preload = new Parcel();
+			preload.from_json(json_asset.json);
+			new ParcelProgress({
+				parcel: preload,
+				background: new Color(1,0.5,0.25,1),
+				oncomplete: function(_) {
 
-    	EntityFactory.Spawn100EPickup(400,400);
+					Textures.Prepare();
+					drawer = new DebugDraw();
+					gameWorld = new GameWorld();
+					EntityFactory.world = gameWorld;
+					//gameWorld.debugDraw = drawer;
+					//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
+					Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
-		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
-		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
-			var proj = cast(collision.int1.userData.entity);
-			var enem = cast(collision.int2.userData.entity);
-			if( enem.health > 0 ) {
-				proj.isDead = true;
-				enem.health = enem.health - proj.power;
-				if( enem.health <= 0 ) {
-					Enemy.numEnemiesActive -= 1;
-				}
-			}
-		});
-		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
-			collision.int1.userData.entity.isDead = true;
-			(cast(collision.int1.userData.entity, Pickup)).cb(player);
-		});
+					EntityFactory.Spawn100EPickup(400,400);
 
-		Luxe.physics.nape.space.gravity.x = 0;
-		Luxe.physics.nape.space.gravity.y = 0;
+					AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
+					AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
+						var proj = cast(collision.int1.userData.entity);
+						var enem = cast(collision.int2.userData.entity);
+						if( enem.health > 0 ) {
+							proj.isDead = true;
+							enem.health = enem.health - proj.power;
+							if( enem.health <= 0 ) {
+								Enemy.numEnemiesActive -= 1;
+							}
+						}
+					});
+					AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
+						collision.int1.userData.entity.isDead = true;
+						(cast(collision.int1.userData.entity, Pickup)).cb(player);
+					});
 
-		var that = this;
-		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
-		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
-		Luxe.loadText('assets/test-map.json', function(res) {
-			tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
-			tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
-			var themap = that.TiledLayerToMatrix(that.tilemap.layers.get("collisionLayer"));
-			for( i in 0 ... themap.length ) {
-				for( j in 0 ... themap[i].length ) {
-					if( themap[i][j] != 0 ) {
-						var b = new Body(BodyType.STATIC);
-						b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
-						b.space = Luxe.physics.nape.space;
-						b.cbTypes.add(CollisionLayers.WALL);
-						b.setShapeFilters(CollisionFilters.WALL);
-						//EntityFactory.world.debugDraw.add(b);
-					}}}
+					Luxe.physics.nape.space.gravity.x = 0;
+					Luxe.physics.nape.space.gravity.y = 0;
 
-			DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
-			doorList = GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
-			trace(doorList.length);
-			for( i in 0 ... doorList.length ) {
-				var v = doorList[i];
-				if( v.x == 0 && v.y != 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
-				else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32));
-				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
-				else downDoorTiles.push( new Door(v.x*32, v.y*32) );
-			}
-			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
-			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
-			that.RegenScene(true);
-			CloseAllDoors();
+					var that = this;
+					tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
+					entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
+					Luxe.loadText('assets/test-map.json', function(res) {
+						tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
+						tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
+						var themap = that.TiledLayerToMatrix(that.tilemap.layers.get("collisionLayer"));
+						for( i in 0 ... themap.length ) {
+							for( j in 0 ... themap[i].length ) {
+								if( themap[i][j] != 0 ) {
+									var b = new Body(BodyType.STATIC);
+									b.shapes.add(new Polygon(Polygon.rect(j*32, i*32, 32, 32)));
+									b.space = Luxe.physics.nape.space;
+									b.cbTypes.add(CollisionLayers.WALL);
+									b.setShapeFilters(CollisionFilters.WALL);
+									//EntityFactory.world.debugDraw.add(b);
+								}}}
+
+						DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
+						doorList = GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
+						trace(doorList.length);
+						for( i in 0 ... doorList.length ) {
+							var v = doorList[i];
+							if( v.x == 0 && v.y != 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
+							else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32));
+							else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
+							else downDoorTiles.push( new Door(v.x*32, v.y*32) );
+						}
+						enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
+						pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
+						that.RegenScene(true);
+						CloseAllDoors();
+						okgo = true;
+					});
+					trace("FINISH LOAD!");
+				}});
+
+			preload.load();
 		});
 
     } //ready
 
+	var okgo = false;
 	function CheckWarp() {
 		if( !doorsClosed ) {
 			var dist = luxe.Vector.Subtract(rightDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
@@ -335,10 +347,12 @@ class Main extends luxe.Game {
     } //onkeyup
 
     override function update(dt:Float) {
+    	if( okgo ){
     	gameWorld.Step();
     	CheckWarp();
     	if( Enemy.numEnemiesActive == 0 ) {
 			OpenAllDoors();
+		}
 		}
     } //update
 
