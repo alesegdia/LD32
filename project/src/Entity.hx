@@ -33,6 +33,7 @@ import phoenix.geometry.CircleGeometry;
 
 class Entity {
 	var texture : Texture;
+	public var isPlayer = false;
 	public var sprite : Sprite;
 	public var body : Body;
 	public var isDead = false;
@@ -113,10 +114,11 @@ class GameWorld {
 			entities.remove(toClear[i]);
 		}
 	}
-	public function Clear() {
+	public function Clear(removePlayer) {
 		for( entity in entities )
 		{
-			entity.destroy();
+			if( !removePlayer && entity.isPlayer ) {}
+			else entity.destroy();
 		}
 		while( entities.length > 0 )
 		{
@@ -211,9 +213,14 @@ class EntityFactory {
 
 }
 
+enum DoorType {
+	LEFT; RIGHT; UP; DOWN;
+}
+
 class Door extends Entity {
 
 	var isOpened : Bool;
+	var doorType : DoorType;
 
 	public function new(x:Float,y:Float) {
 		sprite = new Sprite({
@@ -261,6 +268,7 @@ class Player extends Entity {
 	public var anim : SpriteAnimation = new SpriteAnimation({ name: 'anim' });
 
 	public function new() {
+		isPlayer = true;
 		texture = Luxe.loadTexture('assets/player-walk.png');
 		sprite = new Sprite({
 			name: "player",
@@ -406,13 +414,9 @@ class Enemy extends Entity {
 	var speed = 1.5;
 	var finalVelocity : Vec2 = new Vec2(0,0);
 	override public function update() {
-		trace("HUH");
 		this.body.rotation = 0;
-		trace(Player.position);
-		trace(this.body.position);
 		finalVelocity.x = this.body.position.x - Player.position.x;
 		finalVelocity.y = this.body.position.y - Player.position.y;
-		trace(finalVelocity);
 		this.body.velocity = finalVelocity;
 		this.body.velocity.x = -this.body.velocity.x * speed;
 		this.body.velocity.y = -this.body.velocity.y * speed;

@@ -140,11 +140,28 @@ class Main extends luxe.Game {
 		}
 	}
 
-	public function RegenScene() {
-		gameWorld.Clear();
+	public function CloseAllDoors() {
+		CloseDoors(rightDoorTiles);
+		CloseDoors(leftDoorTiles);
+		CloseDoors(upDoorTiles);
+		CloseDoors(downDoorTiles);
+	}
+
+	public function OpenAllDoors() {
+		OpenDoors(rightDoorTiles);
+		OpenDoors(leftDoorTiles);
+		OpenDoors(upDoorTiles);
+		OpenDoors(downDoorTiles);
+	}
+
+	public function RegenScene( createPlayer : Bool ) {
+		gameWorld.Clear(createPlayer);
 		SpawnRandomEnemy();
 		if( Math.random() < 0.70 ) SpawnRandomPickup();
-    	player = EntityFactory.SpawnPlayer();
+    	if( createPlayer ) player = EntityFactory.SpawnPlayer();
+    	else {
+			gameWorld.AddEntity(player);
+		}
 	}
 
     override function ready() {
@@ -161,7 +178,6 @@ class Main extends luxe.Game {
     	//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 		Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
-    	EntityFactory.SpawnEnemy(300,300);
     	EntityFactory.Spawn100EPickup(400,400);
 
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
@@ -195,17 +211,53 @@ class Main extends luxe.Game {
 			trace(doorList.length);
 			for( i in 0 ... doorList.length ) {
 				var v = doorList[i];
-				if( v.x == 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
+				if( v.x == 0 && v.y != 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
 				else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32));
 				else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
 				else downDoorTiles.push( new Door(v.x*32, v.y*32) );
 			}
 			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
-			that.RegenScene();
+			that.RegenScene(true);
 		});
 
     } //ready
+
+	function CheckWarp() {
+		if( !doorsClosed ) {
+			var dist = luxe.Vector.Subtract(rightDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 10 ) {
+				RegenScene(false);
+				trace(leftDoorTiles[0].body.position);
+				player.body.position.x = 40;
+				player.body.position.y = Luxe.screen.h/2;
+				CloseAllDoors();
+			}
+			dist = luxe.Vector.Subtract(leftDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 10 ) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32 - 40;
+				player.body.position.y = Luxe.screen.h/2;
+				CloseAllDoors();
+			}
+
+			dist = luxe.Vector.Subtract(upDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 10 ) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32/2;
+				player.body.position.y = 54;
+				CloseAllDoors();
+			}
+
+			dist = luxe.Vector.Subtract(downDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
+			if( dist < 10 ) {
+				RegenScene(false);
+				player.body.position.x = tilemap.width*32/2;
+				player.body.position.y = Luxe.screen.h - 54;
+				CloseAllDoors();
+			}
+		}
+	}
 
 	var doorsClosed = true;
     override function onkeyup( e:KeyEvent ) {
@@ -214,20 +266,14 @@ class Main extends luxe.Game {
             Luxe.shutdown();
         }
         if( e.keycode == Key.key_k) {
-			RegenScene();
+			RegenScene(false);
 		}
         if( e.keycode == Key.key_j) {
         	doorsClosed = !doorsClosed;
-        	if( doorsClosed ) {
-				OpenDoors(rightDoorTiles);
-				OpenDoors(leftDoorTiles);
-				OpenDoors(upDoorTiles);
-				OpenDoors(downDoorTiles);
+        	if( !doorsClosed ) {
+        		OpenAllDoors();
 			} else {
-				CloseDoors(rightDoorTiles);
-				CloseDoors(leftDoorTiles);
-				CloseDoors(upDoorTiles);
-				CloseDoors(downDoorTiles);
+				CloseAllDoors();
 			}
 		}
 		if( e.keycode == Key.key_p) {
@@ -238,6 +284,7 @@ class Main extends luxe.Game {
 
     override function update(dt:Float) {
     	gameWorld.Step();
+    	CheckWarp();
     } //update
 
 
