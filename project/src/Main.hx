@@ -30,6 +30,7 @@ import luxe.tilemaps.Tilemap.TileLayer;
 import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 import Entity.Player;
+import Entity.Enemy;
 import Entity.Door;
 import Entity.Pickup;
 import Entity.Projectile;
@@ -146,9 +147,11 @@ class Main extends luxe.Game {
 		CloseDoors(leftDoorTiles);
 		CloseDoors(upDoorTiles);
 		CloseDoors(downDoorTiles);
+		doorsClosed = true;
 	}
 
 	public function OpenAllDoors() {
+		doorsClosed = false;
 		OpenDoors(rightDoorTiles);
 		OpenDoors(leftDoorTiles);
 		OpenDoors(upDoorTiles);
@@ -157,6 +160,7 @@ class Main extends luxe.Game {
 
 	public function RegenScene( createPlayer : Bool ) {
 		gameWorld.Clear(createPlayer);
+		Enemy.numEnemiesActive = 0;
 		SpawnRandomEnemy();
 		if( Math.random() < 0.70 ) SpawnRandomPickup();
     	if( createPlayer ) player = EntityFactory.SpawnPlayer();
@@ -185,8 +189,13 @@ class Main extends luxe.Game {
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
 			var proj = cast(collision.int1.userData.entity);
 			var enem = cast(collision.int2.userData.entity);
-			proj.isDead = true;
-			enem.health = enem.health - proj.power;
+			if( enem.health > 0 ) {
+				proj.isDead = true;
+				enem.health = enem.health - proj.power;
+				if( enem.health <= 0 ) {
+					Enemy.numEnemiesActive -= 1;
+				}
+			}
 		});
 		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
 			collision.int1.userData.entity.isDead = true;
@@ -227,6 +236,7 @@ class Main extends luxe.Game {
 			enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 			pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
 			that.RegenScene(true);
+			CloseAllDoors();
 		});
 
     } //ready
@@ -327,6 +337,9 @@ class Main extends luxe.Game {
     override function update(dt:Float) {
     	gameWorld.Step();
     	CheckWarp();
+    	if( Enemy.numEnemiesActive == 0 ) {
+			OpenAllDoors();
+		}
     } //update
 
 

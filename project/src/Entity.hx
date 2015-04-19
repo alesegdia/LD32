@@ -76,6 +76,7 @@ class Textures {
 	public static var PICKUPCC;
 	public static var ENEMY;
 	public static var HAPPY;
+	public static var MONEYEXPLO;
 	public static function Prepare()
 	{
 		PICKUP100 = Luxe.loadTexture("assets/moneyStack100.png");
@@ -87,6 +88,7 @@ class Textures {
 		PROJECTILE500 = Luxe.loadTexture("assets/projectile500.png");
 		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
 		HAPPY = Luxe.loadTexture("assets/happyBubble.png");
+		MONEYEXPLO = Luxe.loadTexture("assets/moneyExplosion.png");
 	}
 }
 
@@ -140,6 +142,31 @@ class EntityFactory {
 		var player = new Player();
 		world.AddEntity(player);
 		return player;
+	}
+
+	static public function SpawnMoneyExplosion(x,y) {
+		var texture = Luxe.loadTexture('assets/moneyExplosion.png');
+		texture.onload = function(t) {
+			var sprite = new Sprite({
+				texture: t,
+				pos: new Vector(x,y),
+				size: new Vector(32,64)
+			});
+			var animJson = '{
+				"explo" : {
+					"frame_size" : { "x":"32", "y":"64" },
+						"frameset" : [ "1-4" ],
+						"loop" : "false",
+						"speed" : "12",
+						"filter_type" : "nearest"
+				}}';
+			var anim = new SpriteAnimation({ name: "exploanim" });
+			sprite.add(anim);
+			anim.add_from_json(animJson);
+			anim.restart();
+			haxe.Timer.delay(function() {sprite.destroy();}, 1000);
+			luxe.tween.Actuate.tween(sprite.color, 1, {a:0});
+		};
 	}
 
 	static public function SpawnProjectile(x,y, vel:Vector, moneyPerShot:Int, flip:Bool) {
@@ -402,6 +429,9 @@ class Player extends Entity {
 		if( Player.damageDealt != 0 ) {
 			this.money -= Player.damageDealt;
 			Player.damageDealt = 0;
+			sprite.color.r = 0;
+			sprite.color.b = 0;
+			luxe.tween.Actuate.tween(sprite.color, 0.3, {r:1, b:1});
 		}
 		this.body.rotation = 0;
 		super.update();
@@ -417,10 +447,12 @@ class Enemy extends Entity {
 	var attackRate : Float = 0.5;
 	var attackPower : Int = 10000;
 	var nextAttack : Float = haxe.Timer.stamp();
+	public static var numEnemiesActive : Int = 0;
 
 	var happySprite : Sprite;
 
 	public function new( x, y ) {
+		Enemy.numEnemiesActive = 0;
 		texture = Textures.ENEMY;
 		sprite = new Sprite({
 			texture: texture,
@@ -485,6 +517,7 @@ class Enemy extends Entity {
 			if( playerNear && nextAttack < haxe.Timer.stamp() ) {
 				Player.damageDealt += attackPower;
 				nextAttack = haxe.Timer.stamp() + attackRate;
+				EntityFactory.SpawnMoneyExplosion(Player.position.x, Player.position.y);
 			}
 		}
 		else
