@@ -147,7 +147,7 @@ class EntityFactory {
 
 	static public function Spawn100EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP100,function(player){
-			player.money += 100;
+			player.moneyPerShot = 100;
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -155,7 +155,7 @@ class EntityFactory {
 
 	static public function Spawn200EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP200,function(player){
-			player.money += 200;
+			player.moneyPerShot = 200;
 		});
 		world.AddEntity(pickup);
 		return pickup;
@@ -163,7 +163,7 @@ class EntityFactory {
 
 	static public function Spawn500EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP500,function(player){
-			player.money += 500;
+			player.moneyPerShot = 500;
 		});
 		world.AddEntity(pickup);
 		return pickup;
