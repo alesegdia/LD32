@@ -347,12 +347,13 @@ class Main extends luxe.Game {
     } //onkeyup
 
     override function update(dt:Float) {
-    	if( okgo ){
-    	gameWorld.Step();
-    	CheckWarp();
-    	if( Enemy.numEnemiesActive == 0 ) {
-			OpenAllDoors();
-		}
+		if( okgo ){
+			gameWorld.Step();
+			CheckWarp();
+			if( Enemy.numEnemiesActive == 0 ) {
+				OpenAllDoors();
+				trace("OPEN!");
+			}
 		}
     } //update
 

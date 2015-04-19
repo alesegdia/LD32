@@ -457,7 +457,7 @@ class Enemy extends Entity {
 	var happySprite : Sprite;
 
 	public function new( x, y ) {
-		Enemy.numEnemiesActive = 0;
+		Enemy.numEnemiesActive += 1;
 		texture = Textures.ENEMY;
 		sprite = new Sprite({
 			texture: texture,
