@@ -43,6 +43,7 @@ import Entity.CollisionFilters;
 import Entity.Textures;
 import Entity.Cajero;
 import Entity.GlobalParams;
+import luxe.Text;
 
 class Main extends luxe.Game {
 
@@ -167,13 +168,14 @@ class Main extends luxe.Game {
 
 	var cajeroComing:Bool = false;
 	public function RegenScene( createPlayer : Bool ) {
+		lost = false;
 		wasOpened = false;
 		cajero.Hide();
 		cajeroComing = false;
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
-		var numEnemies : Int = Math.floor(currentRoom/3) + 1;
-		if( currentRoom == 1 ) {
+		var numEnemies : Int = Math.floor(currentRoom/2) + 1;
+		if( currentRoom == 7 ) {
 			EntityFactory.SpawnBoss(400,400);
 		} else {
 			for( i in 0 ... numEnemies ) {
@@ -203,6 +205,7 @@ class Main extends luxe.Game {
 
 	var currentRoom : Float = 1;
 	var fade:Sprite;
+	var gameover:Sprite;
 	function FadeOut() {
 		luxe.tween.Actuate.tween(fade.color, 0.5, {a:1});
 	}
@@ -224,7 +227,6 @@ class Main extends luxe.Game {
 			enem.sprite.color.b = 0;
 			luxe.tween.Actuate.tween(enem.sprite.color, 0.3, {r:1, b:1});
 			proj.isDead = true;
-			GlobalParams.shakeAmount += 10;
 			if( enem.health > 0 ) {
 				enem.health = enem.health - proj.power;
 				if( enem.health <= 0 ) {
@@ -261,6 +263,13 @@ class Main extends luxe.Game {
 						 size: new Vector(Luxe.screen.w*2.5,Luxe.screen.h*2.5),
 						 batcher: fadeBatcher,
 					});
+					gameover = new Sprite({
+						texture: Luxe.loadTexture("assets/gameover.png"),
+						 pos: new Vector(Luxe.screen.w/2,Luxe.screen.h/2),
+						 size: new Vector(Luxe.screen.w,Luxe.screen.h),
+						 batcher: fadeBatcher,
+					});
+					gameover.visible = false;
 
 					camera = new Camera();
 					tileBatcher.view = camera;
@@ -306,6 +315,15 @@ class Main extends luxe.Game {
 					//gameWorld.AddEntity(cajero);
 					trace("FINISH LOAD!");
 					haxe.Timer.delay(function() { FadeIn(); } ,2000);
+
+					statsText = new Text({
+						pos: new Vector(Luxe.screen.mid.x-100, Luxe.screen.mid.y),
+						point_size: 24,
+						text: "",
+						batcher:fadeBatcher,
+						color:new Color(1,1,1,1)
+					});
+					statsText.visible = false;
 				}});
 
 			preload.load();
@@ -400,7 +418,7 @@ class Main extends luxe.Game {
             Luxe.shutdown();
         }
         if( e.keycode == Key.key_k) {
-			RegenScene(false);
+        	player.money = 0;
 		}
         if( e.keycode == Key.key_j) {
         	doorsClosed = !doorsClosed;
@@ -412,6 +430,11 @@ class Main extends luxe.Game {
 		}
 		if( e.keycode == Key.key_p) {
 			SpawnRandomEnemy();
+		}
+		if( lost && e.keycode == Key.space ) {
+			RegenScene(true);
+			okgo = true;
+			gameover.visible=false;
 		}
 
     } //onkeyup
@@ -425,7 +448,25 @@ class Main extends luxe.Game {
 		camera.pos.y = (Math.random()-0.5) * 2 * howMuch;
 	}
 
+	var lost = false;
+	var statsText:Text;
+
     override function update(dt:Float) {
+    	GlobalParams.isPause = okgo;
+		if( player != null && player.money < 0 ) {
+			lost = true;
+			okgo=false;
+			camera.pos.x = 0;
+			camera.pos.y = 0;
+			gameover.visible = true;
+
+			statsText.text = "Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" +
+							 "Money spent in bribes " + GlobalParams.sobornoMoney + "€\n" +
+							 "Money stolen by law " + GlobalParams.stolenMoney + "€\n" +
+							 "Money drawn from bank " + GlobalParams.bankMoney + "€\n" +
+							 "Final money " + player.money + "€\n";
+			statsText.visible = true;
+		}
 		if( okgo ){
 			ShakeCam(GlobalParams.shakeAmount);
 			GlobalParams.shakeAmount *= 0.90;
@@ -444,7 +485,7 @@ class Main extends luxe.Game {
 				trace(dist);
 				if( dist < 64 && Luxe.input.inputdown("open") && !wasOpened ) {
 					wasOpened = true;
-					cajero.Open( currentRoom * 2 );
+					cajero.Open( currentRoom * 3 );
 				}
 			}
 		}

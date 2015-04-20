@@ -269,7 +269,7 @@ class EntityFactory {
 	static public function SpawnMoneyBag(x, y) {
 		var pickup = new Pickup(x,y,Textures.MONEYBAG,function(player){
 			player.money += 5000;
-
+			GlobalParams.bankMoney += 5000;
 			EntityFactory.SpawnIndicator(Player.position.x, Player.position.y, 5000);
 		});
 		pickup.step = function(pickup) {
@@ -567,13 +567,19 @@ class Player extends Entity {
 
 		if( doShot ) {
 			if( haxe.Timer.stamp() > this.nextShot ) {
-				if( haxe.Timer.stamp() > this.leftCreditCard ) this.money -= this.moneyPerShot;
+				if( haxe.Timer.stamp() > this.leftCreditCard ) {
+					this.money -= this.moneyPerShot;
+					GlobalParams.sobornoMoney += this.moneyPerShot;
+				} else {
+					GlobalParams.creditCardMoney += this.moneyPerShot;
+				}
 				this.nextShot = haxe.Timer.stamp() + this.shotRate;
 				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y+5, facing, moneyPerShot, sprite.flipx);
 			}
 		}
 
 		if( Player.damageDealt != 0 ) {
+			GlobalParams.shakeAmount += 10;
 			EntityFactory.SpawnIndicator(this.body.position.x, this.body.position.y, Player.damageDealt);
 			this.money -= Player.damageDealt;
 			Player.damageDealt = 0;
@@ -703,6 +709,7 @@ class Enemy extends Entity {
 			}
 			if( playerNear && nextAttack < haxe.Timer.stamp() ) {
 				Player.damageDealt += attackPower;
+				GlobalParams.stolenMoney += attackPower;
 				nextAttack = haxe.Timer.stamp() + attackRate;
 				EntityFactory.SpawnMoneyExplosion(Player.position.x, Player.position.y);
 			}
@@ -722,6 +729,11 @@ class Enemy extends Entity {
 
 class GlobalParams {
 	public static var shakeAmount : Float = 0;
+	public static var creditCardMoney: Float = 0;
+	public static var sobornoMoney : Float = 0;
+	public static var stolenMoney : Float = 0;
+	public static var bankMoney : Float = 0;
+	public static var isPause : Bool = false;
 }
 
 class Boss extends Entity {
@@ -769,9 +781,11 @@ class Boss extends Entity {
 		anim.animation = "heroWalk";
 		anim.animation = "heroWalk";
 		anim.play();
+		if( GlobalParams.isPause ) anim.animation = "heroStand";
 		sprite.events.listen('foot.1', function(e) {
 			if( Math.abs(Player.position.x - body.position.x) < 384/2 && Math.abs(Player.position.y - body.position.y-32 ) < 32 ) {
 				Player.damageDealt += 100000;
+				GlobalParams.stolenMoney += 100000;
 			}
 			GlobalParams.shakeAmount = 100;
 			var step : Sprite = new Sprite({
@@ -780,7 +794,7 @@ class Boss extends Entity {
 				pos: new Vector(body.position.x, body.position.y+64),
 				size: new Vector(384,85)
 			});
-			haxe.Timer.delay(function(){ 
+			haxe.Timer.delay(function(){
 				luxe.tween.Actuate.tween(step.color, 1.5, {a:0});
 			}, 200);
 			haxe.Timer.delay(function(){ step.destroy(); }, 2000);
@@ -843,7 +857,7 @@ class Boss extends Entity {
 
 			var playerNear = false;
 			ray = nape.geom.Ray.fromSegment(body.position, Player.position);
-			ray.maxDistance = 40;
+			ray.maxDistance = 92;
 			rayResult = Luxe.physics.nape.space.rayCast(ray);
 			if( rayResult != null ) {
 				if( rayResult.shape.filter == CollisionFilters.PLAYER ) {

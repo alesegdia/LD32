@@ -2198,6 +2198,7 @@ EntityFactory.Spawn100EPickup = function(x,y) {
 EntityFactory.SpawnMoneyBag = function(x,y) {
 	var pickup = new Pickup(x,y,Textures.MONEYBAG,function(player) {
 		player.money += 5000;
+		GlobalParams.bankMoney += 5000;
 		EntityFactory.SpawnIndicator(Player.position.get_x(),Player.position.get_y(),5000);
 	});
 	pickup.step = function(pickup1) {
@@ -3798,12 +3799,16 @@ Player.prototype = $extend(Entity.prototype,{
 			}
 			if(doShot) {
 				if(haxe.Timer.stamp() > this.nextShot) {
-					if(haxe.Timer.stamp() > this.leftCreditCard) this.money -= this.moneyPerShot;
+					if(haxe.Timer.stamp() > this.leftCreditCard) {
+						this.money -= this.moneyPerShot;
+						GlobalParams.sobornoMoney += this.moneyPerShot;
+					} else GlobalParams.creditCardMoney += this.moneyPerShot;
 					this.nextShot = haxe.Timer.stamp() + this.shotRate;
 					EntityFactory.SpawnProjectile(this.body.get_position().get_x(),this.body.get_position().get_y() + 5,this.facing,this.moneyPerShot,this.sprite.flipx);
 				}
 			}
 			if(Player.damageDealt != 0) {
+				GlobalParams.shakeAmount += 10;
 				EntityFactory.SpawnIndicator(this.body.get_position().get_x(),this.body.get_position().get_y(),Player.damageDealt);
 				this.money -= Player.damageDealt;
 				Player.damageDealt = 0;
@@ -3917,6 +3922,7 @@ Enemy.prototype = $extend(Entity.prototype,{
 				}
 				if(playerNear && this.nextAttack < haxe.Timer.stamp()) {
 					Player.damageDealt += this.attackPower;
+					GlobalParams.stolenMoney += this.attackPower;
 					this.nextAttack = haxe.Timer.stamp() + this.attackRate;
 					EntityFactory.SpawnMoneyExplosion(Player.position.get_x(),Player.position.get_y());
 				}
@@ -3970,8 +3976,12 @@ var Boss = function(x,y) {
 	this.anim.set_animation("heroWalk");
 	this.anim.set_animation("heroWalk");
 	this.anim.play();
+	if(GlobalParams.isPause) this.anim.set_animation("heroStand");
 	this.sprite.events.listen("foot.1",function(e) {
-		if(Math.abs(Player.position.get_x() - _g.body.get_position().get_x()) < 192. && Math.abs(Player.position.get_y() - _g.body.get_position().get_y() - 32) < 32) Player.damageDealt += 100000;
+		if(Math.abs(Player.position.get_x() - _g.body.get_position().get_x()) < 192. && Math.abs(Player.position.get_y() - _g.body.get_position().get_y() - 32) < 32) {
+			Player.damageDealt += 100000;
+			GlobalParams.stolenMoney += 100000;
+		}
 		GlobalParams.shakeAmount = 100;
 		var step = new luxe.Sprite({ batcher : Entity.batcher, texture : Luxe.loadTexture("assets/bossStep.png"), pos : new phoenix.Vector(_g.body.get_position().get_x(),_g.body.get_position().get_y() + 64), size : new phoenix.Vector(384,85)});
 		haxe.Timer.delay(function() {
@@ -4043,7 +4053,7 @@ Boss.prototype = $extend(Entity.prototype,{
 				}
 				var playerNear = false;
 				ray = nape.geom.Ray.fromSegment(this.body.get_position(),Player.position);
-				ray.zpp_inner.maxdist = 40;
+				ray.zpp_inner.maxdist = 92;
 				ray.zpp_inner.maxdist;
 				rayResult = Luxe.physics.nape.space.rayCast(ray);
 				if(rayResult != null) {
@@ -4608,6 +4618,7 @@ luxe.Game.prototype = $extend(luxe.Emitter.prototype,{
 	,__class__: luxe.Game
 });
 var Main = function() {
+	this.lost = false;
 	this.shakeAmount = 10;
 	this.wasOpened = false;
 	this.doorsClosed = true;
@@ -4715,7 +4726,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			}
 			str += "\n";
 		}
-		haxe.Log.trace(str,{ fileName : "Main.hx", lineNumber : 138, className : "Main", methodName : "DebugLayer"});
+		haxe.Log.trace(str,{ fileName : "Main.hx", lineNumber : 139, className : "Main", methodName : "DebugLayer"});
 	}
 	,OpenDoors: function(doors) {
 		var _g1 = 0;
@@ -4748,13 +4759,14 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		this.OpenDoors(this.downDoorTiles);
 	}
 	,RegenScene: function(createPlayer) {
+		this.lost = false;
 		this.wasOpened = false;
 		this.cajero.Hide();
 		this.cajeroComing = false;
 		this.gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
-		var numEnemies = Math.floor(this.currentRoom / 3) + 1;
-		if(this.currentRoom == 1) EntityFactory.SpawnBoss(400,400); else {
+		var numEnemies = Math.floor(this.currentRoom / 2) + 1;
+		if(this.currentRoom == 7) EntityFactory.SpawnBoss(400,400); else {
 			var _g = 0;
 			while(_g < numEnemies) {
 				var i = _g++;
@@ -4800,7 +4812,6 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			enem.sprite.color.b = 0;
 			luxe.tween.Actuate.tween(enem.sprite.color,0.3,{ r : 1, b : 1});
 			proj.isDead = true;
-			GlobalParams.shakeAmount += 10;
 			if(enem.health > 0) {
 				enem.health = enem.health - proj.power;
 				if(enem.health <= 0) Enemy.numEnemiesActive -= 1;
@@ -4822,6 +4833,8 @@ Main.prototype = $extend(luxe.Game.prototype,{
 				EntityFactory.world = _g.gameWorld;
 				Luxe.renderer.clear_color = new phoenix.Color().rgb(11494970);
 				_g.fade = new luxe.Sprite({ texture : Luxe.loadTexture("assets/fade.png"), pos : new phoenix.Vector(0,0), size : new phoenix.Vector(Luxe.core.screen.w * 2.5,Luxe.core.screen.h * 2.5), batcher : _g.fadeBatcher});
+				_g.gameover = new luxe.Sprite({ texture : Luxe.loadTexture("assets/gameover.png"), pos : new phoenix.Vector(Luxe.core.screen.w / 2,Luxe.core.screen.h / 2), size : new phoenix.Vector(Luxe.core.screen.w,Luxe.core.screen.h), batcher : _g.fadeBatcher});
+				_g.gameover.set_visible(false);
 				_g.camera = new phoenix.Camera();
 				_g.tileBatcher.view = _g.camera;
 				_g.entityBatcher.view = _g.camera;
@@ -4867,7 +4880,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 					}
 					_g.DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
 					_g.doorList = _g.GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
-					haxe.Log.trace(_g.doorList.length,{ fileName : "Main.hx", lineNumber : 291, className : "Main", methodName : "ready"});
+					haxe.Log.trace(_g.doorList.length,{ fileName : "Main.hx", lineNumber : 300, className : "Main", methodName : "ready"});
 					var _g21 = 0;
 					var _g11 = _g.doorList.length;
 					while(_g21 < _g11) {
@@ -4882,10 +4895,12 @@ Main.prototype = $extend(luxe.Game.prototype,{
 					_g.okgo = true;
 				});
 				_g.cajero = new Cajero(480,300);
-				haxe.Log.trace("FINISH LOAD!",{ fileName : "Main.hx", lineNumber : 307, className : "Main", methodName : "ready"});
+				haxe.Log.trace("FINISH LOAD!",{ fileName : "Main.hx", lineNumber : 316, className : "Main", methodName : "ready"});
 				haxe.Timer.delay(function() {
 					_g.FadeIn();
 				},2000);
+				_g.statsText = new luxe.Text({ pos : new phoenix.Vector(Luxe.core.screen.get_mid().x - 100,Luxe.core.screen.get_mid().y), point_size : 24, text : "", batcher : _g.fadeBatcher, color : new phoenix.Color(1,1,1,1)},{ fileName : "Main.hx", lineNumber : 319, className : "Main", methodName : "ready"});
+				_g.statsText.set_visible(false);
 			}});
 			preload.load();
 		});
@@ -4897,7 +4912,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			var dist = phoenix.Vector.Subtract(v1,this.player.sprite.get_transform().get_pos()).get_length();
 			if(dist < 40) {
 				this.RegenScene(false);
-				haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 325, className : "Main", methodName : "CheckWarp"});
+				haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 343, className : "Main", methodName : "CheckWarp"});
 				this.player.body.get_position().set_x(40);
 				this.player.body.get_position().set_y((Luxe.core.screen.h + 96) / 2);
 				this.CloseAllDoors();
@@ -4907,7 +4922,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 				dist = phoenix.Vector.Subtract(v1,this.player.sprite.get_transform().get_pos()).get_length();
 				if(dist < 40) {
 					this.RegenScene(false);
-					haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 335, className : "Main", methodName : "CheckWarp"});
+					haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 353, className : "Main", methodName : "CheckWarp"});
 					this.player.body.get_position().set_x(40);
 					this.player.body.get_position().set_y((Luxe.core.screen.h + 96) / 2);
 					this.CloseAllDoors();
@@ -4966,12 +4981,17 @@ Main.prototype = $extend(luxe.Game.prototype,{
 	}
 	,onkeyup: function(e) {
 		if(e.keycode == snow.system.input.Keycodes.escape) Luxe.shutdown();
-		if(e.keycode == snow.system.input.Keycodes.key_k) this.RegenScene(false);
+		if(e.keycode == snow.system.input.Keycodes.key_k) this.player.money = 0;
 		if(e.keycode == snow.system.input.Keycodes.key_j) {
 			this.doorsClosed = !this.doorsClosed;
 			if(!this.doorsClosed) this.OpenAllDoors(); else this.CloseAllDoors();
 		}
 		if(e.keycode == snow.system.input.Keycodes.key_p) this.SpawnRandomEnemy();
+		if(this.lost && e.keycode == snow.system.input.Keycodes.space) {
+			this.RegenScene(true);
+			this.okgo = true;
+			this.gameover.set_visible(false);
+		}
 	}
 	,ShakeCam: function(howMuch) {
 		this.camera.get_pos().set_x((Math.random() - 0.5) * 2 * howMuch);
@@ -4979,6 +4999,16 @@ Main.prototype = $extend(luxe.Game.prototype,{
 	}
 	,update: function(dt) {
 		var _g = this;
+		GlobalParams.isPause = this.okgo;
+		if(this.player != null && this.player.money < 0) {
+			this.lost = true;
+			this.okgo = false;
+			this.camera.get_pos().set_x(0);
+			this.camera.get_pos().set_y(0);
+			this.gameover.set_visible(true);
+			this.statsText.set_text("Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" + "Money spent in bribes " + GlobalParams.sobornoMoney + "€\n" + "Money stolen by law " + GlobalParams.stolenMoney + "€\n" + "Money drawn from bank " + GlobalParams.bankMoney + "€\n" + "Final money " + this.player.money + "€\n");
+			this.statsText.set_visible(true);
+		}
 		if(this.okgo) {
 			this.ShakeCam(GlobalParams.shakeAmount);
 			GlobalParams.shakeAmount *= 0.90;
@@ -4995,12 +5025,12 @@ Main.prototype = $extend(luxe.Game.prototype,{
 						},2000);
 					}
 				}
-				haxe.Log.trace("OPEN!",{ fileName : "Main.hx", lineNumber : 442, className : "Main", methodName : "update"});
+				haxe.Log.trace("OPEN!",{ fileName : "Main.hx", lineNumber : 483, className : "Main", methodName : "update"});
 				var dist = nape.geom.Vec2.distance(new nape.geom.Vec2(480,300),Player.position);
-				haxe.Log.trace(dist,{ fileName : "Main.hx", lineNumber : 444, className : "Main", methodName : "update"});
+				haxe.Log.trace(dist,{ fileName : "Main.hx", lineNumber : 485, className : "Main", methodName : "update"});
 				if(dist < 64 && Luxe.input.inputdown("open") && !this.wasOpened) {
 					this.wasOpened = true;
-					this.cajero.Open(this.currentRoom * 2);
+					this.cajero.Open(this.currentRoom * 3);
 				}
 			}
 		}
@@ -80262,6 +80292,11 @@ Player.position = new nape.geom.Vec2(0,0);
 Player.damageDealt = 0;
 Enemy.numEnemiesActive = 0;
 GlobalParams.shakeAmount = 0;
+GlobalParams.creditCardMoney = 0;
+GlobalParams.sobornoMoney = 0;
+GlobalParams.stolenMoney = 0;
+GlobalParams.bankMoney = 0;
+GlobalParams.isPause = false;
 Boss.numEnemiesActive = 0;
 Luxe.version = "dev";
 Luxe.build = "+a0d661a94b";

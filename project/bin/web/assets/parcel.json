@@ -13,7 +13,8 @@
 		{ "id": "assets/bossStep.png" },
 		{ "id": "assets/test-cajero.png" },
 		{ "id": "assets/fade.png" },
-		{ "id": "assets/moneyBag.png" }
+		{ "id": "assets/moneyBag.png" },
+		{ "id": "assets/gameover.png" }
 	],
 	"json": [
 		{ "id": "assets/test-map.json" }
