@@ -213,6 +213,7 @@ class Main extends luxe.Game {
 		luxe.tween.Actuate.tween(fade.color, 0.5, {a:0});
 	}
     override function ready() {
+    	GlobalParams.SpawnRandomEnemy = this.SpawnRandomEnemy;
 		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
 		fadeBatcher = Luxe.renderer.create_batcher({ layer: 2 });
 		entityBatcher = Luxe.renderer.create_batcher({ layer: 1 });
@@ -453,11 +454,15 @@ class Main extends luxe.Game {
 
     override function update(dt:Float) {
     	//GlobalParams.isPause = okgo;
-		if( player != null && player.money < 0 ) {
+		if( player != null && player.money < 0 || GlobalParams.hasWon) {
 			lost = true;
 			okgo=false;
 			camera.pos.x = 0;
 			camera.pos.y = 0;
+			if( GlobalParams.hasWon ) GlobalParams.endTex = Luxe.loadTexture("assets/win.png");
+			else GlobalParams.endTex = Luxe.loadTexture("assets/gameover.png");
+			gameover.texture = GlobalParams.endTex;
+
 			gameover.visible = true;
 
 			statsText.text = "Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" +

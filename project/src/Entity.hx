@@ -740,7 +740,11 @@ class GlobalParams {
 	public static var sobornoMoney : Float = 0;
 	public static var stolenMoney : Float = 0;
 	public static var bankMoney : Float = 0;
+	public static var numStep : Int = 0;
 	public static var isPause : Bool = false;
+	public static var SpawnRandomEnemy : Void -> Void;
+	public static var hasWon : Bool = false;
+	public static var endTex : Texture;
 }
 
 class Boss extends Entity {
@@ -796,6 +800,10 @@ class Boss extends Entity {
 				GlobalParams.stolenMoney += 100000;
 			}
 			GlobalParams.shakeAmount = 100;
+			GlobalParams.numStep += 1;
+			if( (GlobalParams.numStep%3) == 0 ) {
+				GlobalParams.SpawnRandomEnemy();
+			}
 			var step : Sprite = new Sprite({
 				batcher: Entity.batcher,
 				texture: Luxe.loadTexture("assets/bossStep.png"),
@@ -822,8 +830,8 @@ class Boss extends Entity {
 		happySprite.parent = sprite;
 
 		body = new Body(BodyType.DYNAMIC);
-		body.shapes.add(new Circle(32, new Vec2(0,16)));
-		body.shapes.add(new Circle(32, new Vec2(0,-4)));
+		body.shapes.add(new Circle(32, new Vec2(0,32)));
+		body.shapes.add(new Circle(32, new Vec2(0,0)));
 		body.position.setxy(x,y);
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.ENEMY);
@@ -884,6 +892,7 @@ class Boss extends Entity {
 			body.velocity.y *= 0.95;
 			happySprite.visible = true;
 			anim.animation = "heroStand";
+			GlobalParams.hasWon = true;
 		}
 		}
 

@@ -15,7 +15,8 @@
 		{ "id": "assets/fade.png" },
 		{ "id": "assets/door.png" },
 		{ "id": "assets/moneyBag.png" },
-		{ "id": "assets/gameover.png" }
+		{ "id": "assets/gameover.png" },
+		{ "id": "assets/win.png" }
 	],
 	"json": [
 		{ "id": "assets/test-map.json" }
