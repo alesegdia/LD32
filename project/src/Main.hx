@@ -167,9 +167,13 @@ class Main extends luxe.Game {
 		Enemy.numEnemiesActive = 0;
 		SpawnRandomEnemy();
 		if( Math.random() < 0.70 ) SpawnRandomPickup();
-    	if( createPlayer ) player = EntityFactory.SpawnPlayer();
-    	else {
+    	if( createPlayer )
+		{
+			player = EntityFactory.SpawnPlayer();
+			currentRoom = 0;
+		} else {
 			gameWorld.AddEntity(player);
+			currentRoom += 1;
 		}
 	}
 
@@ -182,6 +186,8 @@ class Main extends luxe.Game {
 			indicators.pop();
 		}
 	}
+
+	var currentRoom : Int = 0;
     override function ready() {
 		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
 		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
