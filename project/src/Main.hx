@@ -171,12 +171,15 @@ class Main extends luxe.Game {
 		cajeroComing = false;
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
-		SpawnRandomEnemy();
+		var numEnemies : Int = Math.floor(currentRoom/3) + 1;
+		for( i in 0 ... numEnemies ) {
+			SpawnRandomEnemy();
+		}
 		if( Math.random() < 0.70 ) SpawnRandomPickup();
     	if( createPlayer )
 		{
 			player = EntityFactory.SpawnPlayer();
-			currentRoom = 0;
+			currentRoom = 1;
 		} else {
 			gameWorld.AddEntity(player);
 			currentRoom += 1;
@@ -193,7 +196,7 @@ class Main extends luxe.Game {
 		}
 	}
 
-	var currentRoom : Int = 0;
+	var currentRoom : Float = 1;
 	var fade:Sprite;
 	function FadeOut() {
 		luxe.tween.Actuate.tween(fade.color, 0.5, {a:1});
@@ -309,16 +312,20 @@ class Main extends luxe.Game {
 	var okgo = false;
 	function CheckWarp() {
 		if( !doorsClosed ) {
-			var dist = luxe.Vector.Subtract(rightDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 10 ) {
+			var v = rightDoorTiles[0].sprite.transform.pos;
+			var v1 = new Vector(v.x+32,v.y+16);
+			var dist = luxe.Vector.Subtract(v1, player.sprite.transform.pos).length;
+			if( dist < 40 ) {
 				RegenScene(false);
 				trace(leftDoorTiles[0].body.position);
 				player.body.position.x = 40;
 				player.body.position.y = Luxe.screen.h/2;
 				CloseAllDoors();
 			} else {
-			dist = luxe.Vector.Subtract(rightDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 10 ) {
+			v = rightDoorTiles[1].sprite.transform.pos;
+			v1 = new Vector(v.x+32,v.y+16);
+			dist = luxe.Vector.Subtract(v1, player.sprite.transform.pos).length;
+			if( dist < 40 ) {
 				RegenScene(false);
 				trace(leftDoorTiles[0].body.position);
 				player.body.position.x = 40;
@@ -327,15 +334,19 @@ class Main extends luxe.Game {
 			}
 			}
 
-			dist = luxe.Vector.Subtract(leftDoorTiles[0].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 32 ) {
+			v = leftDoorTiles[0].sprite.transform.pos;
+			v1 = new Vector(v.x,v.y+16);
+			dist = luxe.Vector.Subtract(v1, player.sprite.transform.pos).length;
+			if( dist < 40 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32 - 40;
 				player.body.position.y = Luxe.screen.h/2;
 				CloseAllDoors();
 			} else {
-			dist = luxe.Vector.Subtract(leftDoorTiles[1].sprite.transform.pos, player.sprite.transform.pos).length;
-			if( dist < 32 ) {
+			v = leftDoorTiles[1].sprite.transform.pos;
+			v1 = new Vector(v.x,v.y+16);
+			dist = luxe.Vector.Subtract(v1, player.sprite.transform.pos).length;
+			if( dist < 40 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32 - 40;
 				player.body.position.y = Luxe.screen.h/2;
@@ -428,7 +439,7 @@ class Main extends luxe.Game {
 				trace(dist);
 				if( dist < 64 && Luxe.input.inputdown("open") && !wasOpened ) {
 					wasOpened = true;
-					cajero.Open();
+					cajero.Open( currentRoom * 2 );
 				}
 			}
 		}

@@ -362,9 +362,9 @@ class Cajero extends Entity {
 		sprite.visible = false;
 	}
 
-	public function Open() {
+	public function Open(howMuch) {
 		sprite.uv.x = 32;
-		for( i in 0 ... 10 ) {
+		for( i in 0 ... Math.round(howMuch) ) {
 			EntityFactory.SpawnMoneyBag(320, 400);
 		}
 	}
@@ -379,7 +379,7 @@ class Cajero extends Entity {
 
 class Door extends Entity {
 
-	var isOpened : Bool;
+	public var isOpened : Bool;
 	var doorType : DoorType;
 
 	public function new(x:Float,y:Float) {
@@ -564,7 +564,7 @@ class Player extends Entity {
 			if( haxe.Timer.stamp() > this.nextShot ) {
 				if( haxe.Timer.stamp() > this.leftCreditCard ) this.money -= this.moneyPerShot;
 				this.nextShot = haxe.Timer.stamp() + this.shotRate;
-				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y, facing, moneyPerShot, sprite.flipx);
+				EntityFactory.SpawnProjectile(this.body.position.x, this.body.position.y+5, facing, moneyPerShot, sprite.flipx);
 			}
 		}
 
