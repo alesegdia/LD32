@@ -121,6 +121,7 @@ class Main extends luxe.Game {
 		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length-1));
 		var e = pickupSpawnList[n];
 		var r = Math.random();
+		EntityFactory.SpawnCreditCardPickup(e.x+100, e.y);
 		if( r < 0.5 ) EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
 		else if( r < 0.75 ) EntityFactory.Spawn200EPickup(e.x*32+16, e.y*32+16);
 		else if( r < 0.9 ) EntityFactory.Spawn500EPickup(e.x*32+16, e.y*32+16);
@@ -228,6 +229,7 @@ class Main extends luxe.Game {
 			enem.sprite.color.b = 0;
 			luxe.tween.Actuate.tween(enem.sprite.color, 0.3, {r:1, b:1});
 			proj.isDead = true;
+			Luxe.audio.play("hurtenemy");
 			if( enem.health > 0 ) {
 				enem.health = enem.health - proj.power;
 				if( enem.health <= 0 ) {
@@ -238,6 +240,7 @@ class Main extends luxe.Game {
 		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
 			collision.int1.userData.entity.isDead = true;
 			(cast(collision.int1.userData.entity, Pickup)).cb(player);
+			Luxe.audio.play("pickup");
 		});
 
 		Luxe.physics.nape.space.gravity.x = 0;
@@ -325,6 +328,11 @@ class Main extends luxe.Game {
 						color:new Color(1,1,1,1)
 					});
 					statsText.visible = false;
+					Luxe.audio.create("assets/hurtplayer.wav", "hurtplayer");
+					Luxe.audio.create("assets/hurtenemy.wav", "hurtenemy");
+					Luxe.audio.create("assets/explo.wav", "explo");
+					Luxe.audio.create("assets/pickup.wav", "pickup");
+					Luxe.audio.create("assets/cc.wav", "cc");
 				}});
 
 			preload.load();

@@ -2245,6 +2245,11 @@ EntityFactory.Spawn500EPickup = function(x,y) {
 };
 EntityFactory.SpawnCreditCardPickup = function(x,y) {
 	var pickup = new Pickup(x,y,Textures.PICKUPCC,function(player) {
+		var prev = player.inUseWeapon.texture;
+		haxe.Timer.delay(function() {
+			player.inUseWeapon.destroy();
+			player.inUseWeapon = new luxe.Sprite({ texture : prev, batcher : Entity.batcher, uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(20,20)});
+		},25000);
 		player.gotCreditCard = true;
 		player.inUseWeapon.destroy();
 		player.inUseWeapon = new luxe.Sprite({ texture : Textures.PICKUPCC, batcher : Entity.batcher, uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(20,20)});
@@ -3755,14 +3760,15 @@ var Player = function() {
 	this.body.set_space(Luxe.physics.nape.space);
 	this.body.get_cbTypes().add(CollisionLayers.PLAYER);
 	this.body.setShapeFilters(CollisionFilters.PLAYER);
+	this.body.setShapeMaterials(new nape.phys.Material(0,0,0,1,0));
 	Luxe.input.bind_key("left",snow.system.input.Keycodes.left);
 	Luxe.input.bind_key("right",snow.system.input.Keycodes.right);
 	Luxe.input.bind_key("up",snow.system.input.Keycodes.up);
 	Luxe.input.bind_key("down",snow.system.input.Keycodes.down);
 	Luxe.input.bind_key("shoot",snow.system.input.Keycodes.key_z);
 	Luxe.input.bind_key("open",snow.system.input.Keycodes.key_x);
-	this.text = new luxe.Text({ pos : new phoenix.Vector(48,4), point_size : 20, text : "0€"},{ fileName : "Entity.hx", lineNumber : 497, className : "Player", methodName : "new"});
-	this.inUseWeapon = new luxe.Sprite({ texture : Textures.PICKUP500, batcher : Entity.batcher, uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(20,20)});
+	this.text = new luxe.Text({ pos : new phoenix.Vector(48,4), point_size : 20, text : "0€"},{ fileName : "Entity.hx", lineNumber : 509, className : "Player", methodName : "new"});
+	this.inUseWeapon = new luxe.Sprite({ texture : Textures.PICKUP100, batcher : Entity.batcher, uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(20,20)});
 };
 Player.__name__ = ["Player"];
 Player.__super__ = Entity;
@@ -3771,6 +3777,7 @@ Player.prototype = $extend(Entity.prototype,{
 		if(this.active) {
 			if(this.gotCreditCard) {
 				this.leftCreditCard = haxe.Timer.stamp() + 25.0;
+				Luxe.audio.play("cc");
 				this.gotCreditCard = false;
 			}
 			if(haxe.Timer.stamp() > this.leftCreditCard) this.shotRate = 0.4; else this.shotRate = 0.05;
@@ -3822,6 +3829,7 @@ Player.prototype = $extend(Entity.prototype,{
 				}
 			}
 			if(Player.damageDealt != 0) {
+				Luxe.audio.play("hurtplayer");
 				GlobalParams.shakeAmount += 10;
 				EntityFactory.SpawnIndicator(this.body.get_position().get_x(),this.body.get_position().get_y(),Player.damageDealt);
 				this.money -= Player.damageDealt;
@@ -3993,6 +4001,7 @@ var Boss = function(x,y) {
 	this.anim.play();
 	if(GlobalParams.isPause) this.anim.set_animation("heroStand"); else this.anim.set_animation("heroWalk");
 	this.sprite.events.listen("foot.1",function(e) {
+		Luxe.audio.play("explo");
 		if(Math.abs(Player.position.get_x() - _g.body.get_position().get_x()) < 192. && Math.abs(Player.position.get_y() - _g.body.get_position().get_y() - 32) < 32) {
 			Player.damageDealt += 100000;
 			GlobalParams.stolenMoney += 100000;
@@ -4727,6 +4736,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		var n = Math.round(this.RandomRange(0,this.pickupSpawnList.length - 1));
 		var e = this.pickupSpawnList[n];
 		var r = Math.random();
+		EntityFactory.SpawnCreditCardPickup(e.x + 100,e.y);
 		if(r < 0.5) EntityFactory.Spawn100EPickup(e.x * 32 + 16,e.y * 32 + 16); else if(r < 0.75) EntityFactory.Spawn200EPickup(e.x * 32 + 16,e.y * 32 + 16); else if(r < 0.9) EntityFactory.Spawn500EPickup(e.x * 32 + 16,e.y * 32 + 16); else EntityFactory.SpawnCreditCardPickup(e.x * 32 + 16,e.y * 32 + 16);
 	}
 	,DebugLayer: function(layer) {
@@ -4744,7 +4754,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			}
 			str += "\n";
 		}
-		haxe.Log.trace(str,{ fileName : "Main.hx", lineNumber : 139, className : "Main", methodName : "DebugLayer"});
+		haxe.Log.trace(str,{ fileName : "Main.hx", lineNumber : 140, className : "Main", methodName : "DebugLayer"});
 	}
 	,OpenDoors: function(doors) {
 		var _g1 = 0;
@@ -4831,6 +4841,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			enem.sprite.color.b = 0;
 			luxe.tween.Actuate.tween(enem.sprite.color,0.3,{ r : 1, b : 1});
 			proj.isDead = true;
+			Luxe.audio.play("hurtenemy");
 			if(enem.health > 0) {
 				enem.health = enem.health - proj.power;
 				if(enem.health <= 0) Enemy.numEnemiesActive -= 1;
@@ -4839,6 +4850,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		this.AddInteractionListener(CollisionLayers.PICKUP,CollisionLayers.PLAYER,function(collision1) {
 			collision1.zpp_inner.int1.outer_i.get_userData().entity.isDead = true;
 			(js.Boot.__cast(collision1.zpp_inner.int1.outer_i.get_userData().entity , Pickup)).cb(_g.player);
+			Luxe.audio.play("pickup");
 		});
 		Luxe.physics.nape.space.get_gravity().set_x(0);
 		Luxe.physics.nape.space.get_gravity().set_y(0);
@@ -4899,7 +4911,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 					}
 					_g.DebugLayer(that.tilemap.layers.get("enemySpawnLayer"));
 					_g.doorList = _g.GetNonEmptyTiles(that.tilemap.layers.get("doorLayer"));
-					haxe.Log.trace(_g.doorList.length,{ fileName : "Main.hx", lineNumber : 301, className : "Main", methodName : "ready"});
+					haxe.Log.trace(_g.doorList.length,{ fileName : "Main.hx", lineNumber : 304, className : "Main", methodName : "ready"});
 					var _g21 = 0;
 					var _g11 = _g.doorList.length;
 					while(_g21 < _g11) {
@@ -4914,12 +4926,17 @@ Main.prototype = $extend(luxe.Game.prototype,{
 					_g.okgo = true;
 				});
 				_g.cajero = new Cajero(480,300);
-				haxe.Log.trace("FINISH LOAD!",{ fileName : "Main.hx", lineNumber : 317, className : "Main", methodName : "ready"});
+				haxe.Log.trace("FINISH LOAD!",{ fileName : "Main.hx", lineNumber : 320, className : "Main", methodName : "ready"});
 				haxe.Timer.delay(function() {
 					_g.FadeIn();
 				},2000);
-				_g.statsText = new luxe.Text({ pos : new phoenix.Vector(Luxe.core.screen.get_mid().x - 100,Luxe.core.screen.get_mid().y), point_size : 24, text : "", batcher : _g.fadeBatcher, color : new phoenix.Color(1,1,1,1)},{ fileName : "Main.hx", lineNumber : 320, className : "Main", methodName : "ready"});
+				_g.statsText = new luxe.Text({ pos : new phoenix.Vector(Luxe.core.screen.get_mid().x - 100,Luxe.core.screen.get_mid().y), point_size : 24, text : "", batcher : _g.fadeBatcher, color : new phoenix.Color(1,1,1,1)},{ fileName : "Main.hx", lineNumber : 323, className : "Main", methodName : "ready"});
 				_g.statsText.set_visible(false);
+				Luxe.audio.create("assets/hurtplayer.wav","hurtplayer");
+				Luxe.audio.create("assets/hurtenemy.wav","hurtenemy");
+				Luxe.audio.create("assets/explo.wav","explo");
+				Luxe.audio.create("assets/pickup.wav","pickup");
+				Luxe.audio.create("assets/cc.wav","cc");
 			}});
 			preload.load();
 		});
@@ -4931,7 +4948,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			var dist = phoenix.Vector.Subtract(v1,this.player.sprite.get_transform().get_pos()).get_length();
 			if(dist < 40) {
 				this.RegenScene(false);
-				haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 344, className : "Main", methodName : "CheckWarp"});
+				haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 352, className : "Main", methodName : "CheckWarp"});
 				this.player.body.get_position().set_x(40);
 				this.player.body.get_position().set_y((Luxe.core.screen.h + 96) / 2);
 				this.CloseAllDoors();
@@ -4941,7 +4958,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 				dist = phoenix.Vector.Subtract(v1,this.player.sprite.get_transform().get_pos()).get_length();
 				if(dist < 40) {
 					this.RegenScene(false);
-					haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 354, className : "Main", methodName : "CheckWarp"});
+					haxe.Log.trace(this.leftDoorTiles[0].body.get_position(),{ fileName : "Main.hx", lineNumber : 362, className : "Main", methodName : "CheckWarp"});
 					this.player.body.get_position().set_x(40);
 					this.player.body.get_position().set_y((Luxe.core.screen.h + 96) / 2);
 					this.CloseAllDoors();
@@ -5045,9 +5062,9 @@ Main.prototype = $extend(luxe.Game.prototype,{
 						},2000);
 					}
 				}
-				haxe.Log.trace("OPEN!",{ fileName : "Main.hx", lineNumber : 488, className : "Main", methodName : "update"});
+				haxe.Log.trace("OPEN!",{ fileName : "Main.hx", lineNumber : 496, className : "Main", methodName : "update"});
 				var dist = nape.geom.Vec2.distance(new nape.geom.Vec2(480,300),Player.position);
-				haxe.Log.trace(dist,{ fileName : "Main.hx", lineNumber : 490, className : "Main", methodName : "update"});
+				haxe.Log.trace(dist,{ fileName : "Main.hx", lineNumber : 498, className : "Main", methodName : "update"});
 				if(dist < 64 && Luxe.input.inputdown("open") && !this.wasOpened) {
 					this.wasOpened = true;
 					this.cajero.Open(this.currentRoom * 3);

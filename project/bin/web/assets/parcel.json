@@ -20,5 +20,12 @@
 	],
 	"json": [
 		{ "id": "assets/test-map.json" }
+	],
+	"wav": [
+		{ "id": "assets/hurtplayer.wav" },
+		{ "id": "assets/hurtenemy.wav" },
+		{ "id": "assets/explo.wav" },
+		{ "id": "assets/cc.wav" },
+		{ "id": "assets/pickup.wav" }
 	]
 }

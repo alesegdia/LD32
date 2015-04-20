@@ -317,6 +317,17 @@ class EntityFactory {
 
 	static public function SpawnCreditCardPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUPCC, function(player){
+			var prev:Texture = player.inUseWeapon.texture;
+			haxe.Timer.delay(function(){
+				player.inUseWeapon.destroy();
+				player.inUseWeapon = new Sprite({
+					texture: prev,
+					batcher: Entity.batcher,
+					uv: new luxe.Rectangle(0,0,32,32),
+					size: new Vector(32,32),
+					pos: new Vector(20,20)
+				});
+			}, 25000);
 			player.gotCreditCard = true;
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
@@ -485,6 +496,7 @@ class Player extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PLAYER);
 		body.setShapeFilters(CollisionFilters.PLAYER);
+		body.setShapeMaterials(new nape.phys.Material(0,0,0,1,0));
 
 		Luxe.input.bind_key("left", Key.left);
 		Luxe.input.bind_key("right", Key.right);
@@ -500,7 +512,7 @@ class Player extends Entity {
 			text: "0€"
 		});
 		inUseWeapon = new Sprite({
-			texture: Textures.PICKUP500,
+			texture: Textures.PICKUP100,
 				batcher: Entity.batcher,
 			uv: new luxe.Rectangle(0,0,32,32),
 			size: new Vector(32,32),
@@ -514,6 +526,7 @@ class Player extends Entity {
 		if( active ) {
 		if( gotCreditCard ) {
 			leftCreditCard = haxe.Timer.stamp() + 25.0;
+			Luxe.audio.play("cc");
 			gotCreditCard = false;
 		}
 		if( haxe.Timer.stamp() > this.leftCreditCard ) {
@@ -585,6 +598,7 @@ class Player extends Entity {
 		}
 
 		if( Player.damageDealt != 0 ) {
+			Luxe.audio.play("hurtplayer");
 			GlobalParams.shakeAmount += 10;
 			EntityFactory.SpawnIndicator(this.body.position.x, this.body.position.y, Player.damageDealt);
 			this.money -= Player.damageDealt;
@@ -795,9 +809,11 @@ class Boss extends Entity {
 		if( GlobalParams.isPause ) anim.animation = "heroStand";
 		else anim.animation = "heroWalk";
 		sprite.events.listen('foot.1', function(e) {
+			Luxe.audio.play("explo");
 			if( Math.abs(Player.position.x - body.position.x) < 384/2 && Math.abs(Player.position.y - body.position.y-32 ) < 32 ) {
 				Player.damageDealt += 100000;
 				GlobalParams.stolenMoney += 100000;
+				
 			}
 			GlobalParams.shakeAmount = 100;
 			GlobalParams.numStep += 1;
