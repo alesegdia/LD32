@@ -7,7 +7,10 @@
 		{ "id": "assets/projectile100.png" },
 		{ "id": "assets/projectile200.png" },
 		{ "id": "assets/projectile500.png" },
-		{ "id": "assets/player-walk.png" }
+		{ "id": "assets/player-walk.png" },
+		{ "id": "assets/policemanWalk.png" },
+		{ "id": "assets/test-cajero.png" },
+		{ "id": "assets/moneyBag.png" }
 	],
 	"json": [
 		{ "id": "assets/test-map.json" }

@@ -32,6 +32,7 @@ import phoenix.Texture;
 import phoenix.geometry.CircleGeometry;
 
 class Entity {
+	public static var batcher : phoenix.Batcher;
 	var texture : Texture;
 	public var isPlayer = false;
 	public var sprite : Sprite;
@@ -77,18 +78,53 @@ class Textures {
 	public static var ENEMY;
 	public static var HAPPY;
 	public static var MONEYEXPLO;
+	public static var MONEYBAG;
 	public static function Prepare()
 	{
 		PICKUP100 = Luxe.loadTexture("assets/moneyStack100.png");
+		PICKUP100.onload = function(t) {
+			t.filter = nearest;
+		};
 		PICKUP200 = Luxe.loadTexture("assets/moneyStack200.png");
+		PICKUP200.onload = function(t) {
+			t.filter = nearest;
+		};
 		PICKUP500 = Luxe.loadTexture("assets/moneyStack500.png");
+		PICKUP500.onload = function(t) {
+			t.filter = nearest;
+		};
 		PICKUPCC = Luxe.loadTexture("assets/creditCard.png");
+		PICKUPCC.onload = function(t) {
+			t.filter = nearest;
+		};
 		PROJECTILE100 = Luxe.loadTexture("assets/projectile100.png");
+		PROJECTILE100.onload = function(t) {
+			t.filter = nearest;
+		};
 		PROJECTILE200 = Luxe.loadTexture("assets/projectile200.png");
+		PROJECTILE200.onload = function(t) {
+			t.filter = nearest;
+		};
 		PROJECTILE500 = Luxe.loadTexture("assets/projectile500.png");
-		ENEMY = Luxe.loadTexture("assets/test-enemy.png");
+		PROJECTILE500.onload = function(t) {
+			t.filter = nearest;
+		};
+		ENEMY = Luxe.loadTexture("assets/policemanWalk.png");
+		ENEMY.onload = function(t) {
+			t.filter = nearest;
+		};
 		HAPPY = Luxe.loadTexture("assets/happyBubble.png");
+		HAPPY.onload = function(t) {
+			t.filter = nearest;
+		};
 		MONEYEXPLO = Luxe.loadTexture("assets/moneyExplosion.png");
+		MONEYEXPLO.onload = function(t) {
+			t.filter = nearest;
+		};
+		MONEYBAG = Luxe.loadTexture("assets/moneyBag.png");
+		MONEYBAG.onload = function(t) {
+			t.filter = nearest;
+		};
 	}
 }
 
@@ -144,12 +180,35 @@ class EntityFactory {
 		return player;
 	}
 
+	static public function SpawnIndicator(x:Float,y:Float,qtt:Int) {
+		var txt = '+$qtt€';
+		var thecolor:luxe.Color;
+		switch( qtt ) {
+			case 100: thecolor = new luxe.Color(0,1,0,1);
+			case 200: thecolor = new luxe.Color(1,1,0,1);
+			case 500: thecolor = new luxe.Color(1,0,1,1);
+			default: thecolor = new luxe.Color(1,1,1,1);
+		}
+    	var text = new Text({
+			pos: new Vector(x-16.0,y-40.0),
+			point_size: 16,
+			text: txt,
+			batcher:Entity.batcher,
+			color:thecolor
+		});
+		luxe.tween.Actuate.tween(text.color, 1, {a:0});
+		luxe.tween.Actuate.tween(text.pos, 1, {y:text.pos.y - 28});
+		haxe.Timer.delay(function() {text.destroy();}, 1000);
+	}
+
 	static public function SpawnMoneyExplosion(x,y) {
 		var texture = Luxe.loadTexture('assets/moneyExplosion.png');
 		texture.onload = function(t) {
+			t.filter = nearest;
 			var sprite = new Sprite({
 				texture: t,
 				pos: new Vector(x,y),
+				batcher: Entity.batcher,
 				size: new Vector(32,64)
 			});
 			var animJson = '{
@@ -163,6 +222,7 @@ class EntityFactory {
 			var anim = new SpriteAnimation({ name: "exploanim" });
 			sprite.add(anim);
 			anim.add_from_json(animJson);
+			anim.animation = "explo";
 			anim.restart();
 			haxe.Timer.delay(function() {sprite.destroy();}, 1000);
 			luxe.tween.Actuate.tween(sprite.color, 1, {a:0});
@@ -190,11 +250,29 @@ class EntityFactory {
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
 				texture: Textures.PICKUP100,
+				batcher: Entity.batcher,
 				uv: new luxe.Rectangle(0,0,32,32),
 				size: new Vector(32,32),
 				pos: new Vector(20,20)
 			});
 		});
+		world.AddEntity(pickup);
+		return pickup;
+	}
+
+	static public function SpawnMoneyBag(x, y) {
+		var pickup = new Pickup(x,y,Textures.MONEYBAG,function(player){
+			player.money += 100;
+
+			EntityFactory.SpawnIndicator(Player.position.x, Player.position.y, 100);
+		});
+		pickup.step = function(pickup) {
+			pickup.body.rotation = 0;
+			pickup.body.velocity.x *= 0.95;
+			pickup.body.velocity.y *= 0.95;
+		}
+		pickup.body.velocity.y = 100 + Math.random()*100;
+		pickup.body.velocity.x = Math.random()*100;
 		world.AddEntity(pickup);
 		return pickup;
 	}
@@ -205,6 +283,7 @@ class EntityFactory {
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
 				texture: Textures.PICKUP200,
+				batcher: Entity.batcher,
 				uv: new luxe.Rectangle(0,0,32,32),
 				size: new Vector(32,32),
 				pos: new Vector(20,20)
@@ -220,6 +299,7 @@ class EntityFactory {
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
 				texture: Textures.PICKUP500,
+				batcher: Entity.batcher,
 				uv: new luxe.Rectangle(0,0,32,32),
 				size: new Vector(32,32),
 				pos: new Vector(20,20)
@@ -235,6 +315,7 @@ class EntityFactory {
 			player.inUseWeapon.destroy();
 			player.inUseWeapon = new Sprite({
 				texture: Textures.PICKUPCC,
+				batcher: Entity.batcher,
 				uv: new luxe.Rectangle(0,0,32,32),
 				size: new Vector(32,32),
 				pos: new Vector(20,20)
@@ -250,6 +331,47 @@ enum DoorType {
 	LEFT; RIGHT; UP; DOWN;
 }
 
+class Cajero extends Entity {
+	public function new(x:Float,y:Float) {
+		sprite = new Sprite({
+				batcher: Entity.batcher,
+			texture: Luxe.loadTexture("assets/test-cajero.png"),
+			size: new Vector(32,64),
+			pos: new Vector(x,y)
+		});
+		sprite.texture.filter = nearest;
+		body = new Body(BodyType.STATIC);
+		body.shapes.add(new Polygon(Polygon.rect(x-16, y-32, 32, 64)));
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(CollisionLayers.WALL);
+		body.setShapeFilters(CollisionFilters.WALL);
+		Hide();
+	}
+
+	public function Show() {
+		body.space = Luxe.physics.nape.space;
+		sprite.visible = true;
+	}
+
+	public function Hide() {
+		body.space = null;
+		sprite.visible = false;
+	}
+
+	public function Open() {
+		for( i in 0 ... 10 ) {
+			EntityFactory.SpawnMoneyBag(320, 400);
+		}
+	}
+
+	override public function update() {
+		if( this.body.space != null ) this.body.rotation = 0;
+		this.body.velocity.x *= 0.95;
+		this.body.velocity.y *= 0.95;
+		super.update();
+	}
+}
+
 class Door extends Entity {
 
 	var isOpened : Bool;
@@ -257,11 +379,13 @@ class Door extends Entity {
 
 	public function new(x:Float,y:Float) {
 		sprite = new Sprite({
+				batcher: Entity.batcher,
 			texture: Luxe.loadTexture("assets/test-door.png"),
 			uv: new luxe.Rectangle(0,0,32,32),
 			size: new Vector(32,32),
 			pos: new Vector(x+16,y+16)
 		});
+		sprite.texture.filter = nearest;
 		body = new Body(BodyType.STATIC);
 		body.shapes.add(new Polygon(Polygon.rect(x, y, 32, 32)));
 		body.space = Luxe.physics.nape.space;
@@ -305,8 +429,12 @@ class Player extends Entity {
 	public function new() {
 		isPlayer = true;
 		texture = Luxe.loadTexture('assets/player-walk.png');
+		texture.onload = function(t) {
+			t.filter = nearest;
+		};
 		sprite = new Sprite({
 			name: "player",
+				batcher: Entity.batcher,
 			   texture: texture,
 			   pos: Luxe.screen.mid,
 			   size: new Vector(32,64),
@@ -347,6 +475,7 @@ class Player extends Entity {
 		Luxe.input.bind_key("up", Key.up);
 		Luxe.input.bind_key("down", Key.down);
 		Luxe.input.bind_key("shoot", Key.key_z);
+		Luxe.input.bind_key("open", Key.key_x);
 
 		// GUI
     	text = new Text({
@@ -356,6 +485,7 @@ class Player extends Entity {
 		});
 		inUseWeapon = new Sprite({
 			texture: Textures.PICKUP500,
+				batcher: Entity.batcher,
 			uv: new luxe.Rectangle(0,0,32,32),
 			size: new Vector(32,32),
 			pos: new Vector(20,20)
@@ -432,6 +562,7 @@ class Player extends Entity {
 		}
 
 		if( Player.damageDealt != 0 ) {
+			EntityFactory.SpawnIndicator(this.body.position.x, this.body.position.y, Player.damageDealt);
 			this.money -= Player.damageDealt;
 			Player.damageDealt = 0;
 			sprite.color.r = 0;
@@ -453,6 +584,7 @@ class Enemy extends Entity {
 	var attackPower : Int = 10000;
 	var nextAttack : Float = haxe.Timer.stamp();
 	public static var numEnemiesActive : Int = 0;
+	var anim : SpriteAnimation;
 
 	var happySprite : Sprite;
 
@@ -460,12 +592,36 @@ class Enemy extends Entity {
 		Enemy.numEnemiesActive += 1;
 		texture = Textures.ENEMY;
 		sprite = new Sprite({
+			batcher: Entity.batcher,
 			texture: texture,
 			pos: new Vector(x,y),
-			size: new Vector(32,32)
+			size: new Vector(32,64)
 		});
+		anim = new SpriteAnimation({ name: "enemyanim" });
+		sprite.add(anim);
+		var animJson = '{
+			"heroWalk" : {
+				"frame_size" : { "x":"32", "y":"64" },
+					"frameset" : [ "1-4" ],
+					"loop" : "true",
+					"speed" : "12",
+					"filter_type" : "nearest"
+			},
+			"heroStand" : {
+				"frame_size" : { "x":"32", "y":"64" },
+					"frameset" : [ "2" ],
+					"loop" : "true",
+					"speed" : "12",
+					"filter_type" : "nearest"
+			}
+		}';
+		anim.add_from_json(animJson);
+		anim.animation = "heroWalk";
+		anim.animation = "heroWalk";
+		anim.play();
 
 		happySprite = new Sprite({
+				batcher: Entity.batcher,
 			texture: Textures.HAPPY,
 			pos: new Vector(0,0),
 			size: new Vector(32,32)
@@ -505,6 +661,8 @@ class Enemy extends Entity {
 				this.body.velocity = finalVelocity.normalise();
 				this.body.velocity.x = -this.body.velocity.x * speedx;
 				this.body.velocity.y = -this.body.velocity.y * speedy;
+				if( this.body.velocity.x < 0 ) this.sprite.flipx = true;
+				else this.sprite.flipx = false;
 			} else {
 				this.body.velocity.x = 0;
 				this.body.velocity.y = 0;
@@ -530,6 +688,7 @@ class Enemy extends Entity {
 			body.velocity.x *= 0.95;
 			body.velocity.y *= 0.95;
 			happySprite.visible = true;
+			anim.animation = "heroStand";
 		}
 
 		super.update();
@@ -539,9 +698,11 @@ class Enemy extends Entity {
 class Pickup extends Entity {
 
 	public var cb : Player -> Void;
+	public var step : Pickup -> Void = function(pickup){};
 	public function new( x, y, tex : Texture, cb : Player -> Void ) {
 		texture = tex;
 		sprite = new Sprite({
+				batcher: Entity.batcher,
 			texture: texture,
 			pos: new Vector(x,y),
 			size: new Vector(32,32)
@@ -554,6 +715,11 @@ class Pickup extends Entity {
 		body.cbTypes.add(CollisionLayers.PICKUP);
 		body.setShapeFilters(CollisionFilters.PICKUP);
 		this.cb = cb;
+	}
+
+	override public function update() {
+		step(this);
+		super.update();
 	}
 
 }
@@ -569,6 +735,7 @@ class Projectile extends Entity {
 		if( moneyPerShot == 500 ) texture = Textures.PROJECTILE500;
 		power = moneyPerShot;
 		sprite = new Sprite({
+				batcher: Entity.batcher,
 			   texture: texture,
 			   pos: pos,
 			   size: new Vector(32,32),

@@ -40,6 +40,7 @@ import Entity.EntityFactory;
 import Entity.CollisionLayers;
 import Entity.CollisionFilters;
 import Entity.Textures;
+import Entity.Cajero;
 
 class Main extends luxe.Game {
 
@@ -105,13 +106,13 @@ class Main extends luxe.Game {
 	}
 
 	public function SpawnRandomEnemy() {
-		var n:Int = Math.round(RandomRange(0, enemySpawnList.length));
+		var n:Int = Math.round(RandomRange(0, enemySpawnList.length-1));
 		var e = enemySpawnList[n];
 		EntityFactory.SpawnEnemy(e.x*32+16, e.y*32+16);
 	}
 
 	public function SpawnRandomPickup() {
-		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length));
+		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length-1));
 		var e = pickupSpawnList[n];
 		var r = Math.random();
 		if( r < 0.5 ) EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
@@ -160,6 +161,8 @@ class Main extends luxe.Game {
 	}
 
 	public function RegenScene( createPlayer : Bool ) {
+		wasOpened = false;
+		cajero.Hide();
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		SpawnRandomEnemy();
@@ -170,7 +173,40 @@ class Main extends luxe.Game {
 		}
 	}
 
+	var indicators : Array<Dynamic> = new Array<Dynamic>();
+	public function DispatchIndicators() {
+		for( i in 0 ... indicators.length ) {
+			EntityFactory.SpawnIndicator(indicators[i].entity.body.position.x, indicators[i].entity.body.position.y, indicators[i].text);
+		}
+		while( indicators.length > 0 ) {
+			indicators.pop();
+		}
+	}
     override function ready() {
+		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
+		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
+		Entity.batcher = entityBatcher;
+
+		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
+		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
+			var proj = cast(collision.int1.userData.entity);
+			var enem = cast(collision.int2.userData.entity);
+				EntityFactory.SpawnIndicator(collision.int1.castBody.position.x, collision.int1.castBody.position.y, cast(proj.power,Int));
+			proj.isDead = true;
+			if( enem.health > 0 ) {
+				enem.health = enem.health - proj.power;
+				if( enem.health <= 0 ) {
+					Enemy.numEnemiesActive -= 1;
+				}
+			}
+		});
+		AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
+			collision.int1.userData.entity.isDead = true;
+			(cast(collision.int1.userData.entity, Pickup)).cb(player);
+		});
+
+		Luxe.physics.nape.space.gravity.x = 0;
+		Luxe.physics.nape.space.gravity.y = 0;
 		Luxe.loadJSON('assets/parcel.json', function(json_asset) {
 
 			var preload = new Parcel();
@@ -190,29 +226,8 @@ class Main extends luxe.Game {
 
 					EntityFactory.Spawn100EPickup(400,400);
 
-					AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
-					AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
-						var proj = cast(collision.int1.userData.entity);
-						var enem = cast(collision.int2.userData.entity);
-						if( enem.health > 0 ) {
-							proj.isDead = true;
-							enem.health = enem.health - proj.power;
-							if( enem.health <= 0 ) {
-								Enemy.numEnemiesActive -= 1;
-							}
-						}
-					});
-					AddInteractionListener( CollisionLayers.PICKUP, CollisionLayers.PLAYER, function(collision:InteractionCallback) {
-						collision.int1.userData.entity.isDead = true;
-						(cast(collision.int1.userData.entity, Pickup)).cb(player);
-					});
-
-					Luxe.physics.nape.space.gravity.x = 0;
-					Luxe.physics.nape.space.gravity.y = 0;
 
 					var that = this;
-					tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
-					entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
 					Luxe.loadText('assets/test-map.json', function(res) {
 						tilemap = new TiledMap({ tiled_file_data: res.text, format: 'json', pos: new Vector(0,0) });
 						tilemap.display({ batcher: tileBatcher, scale:1, grid:false, filter:FilterType.nearest });
@@ -244,6 +259,8 @@ class Main extends luxe.Game {
 						CloseAllDoors();
 						okgo = true;
 					});
+					cajero = new Cajero(320,320);
+					//gameWorld.AddEntity(cajero);
 					trace("FINISH LOAD!");
 				}});
 
@@ -346,6 +363,8 @@ class Main extends luxe.Game {
 
     } //onkeyup
 
+	var cajero:Cajero;
+	var wasOpened:Bool = false;
     override function update(dt:Float) {
 		if( okgo ){
 			gameWorld.Step();
@@ -353,6 +372,13 @@ class Main extends luxe.Game {
 			if( Enemy.numEnemiesActive == 0 ) {
 				OpenAllDoors();
 				trace("OPEN!");
+				cajero.Show();
+				var dist = nape.geom.Vec2.distance(new Vec2(320,320), Player.position);
+				trace(dist);
+				if( dist < 64 && Luxe.input.inputdown("open") && !wasOpened ) {
+					wasOpened = true;
+					cajero.Open();
+				}
 			}
 		}
     } //update
