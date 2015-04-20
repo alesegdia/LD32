@@ -1,0 +1,20 @@
+
+{
+	"textures": [
+		{ "id": "assets/moneyExplosion.png" },
+		{ "id": "assets/test-enemy.png" },
+		{ "id": "assets/happyBubble.png" },
+		{ "id": "assets/projectile100.png" },
+		{ "id": "assets/projectile200.png" },
+		{ "id": "assets/projectile500.png" },
+		{ "id": "assets/player-walk.png" },
+		{ "id": "assets/policemanWalk.png" },
+		{ "id": "assets/bossWalk.png" },
+		{ "id": "assets/test-cajero.png" },
+		{ "id": "assets/fade.png" },
+		{ "id": "assets/moneyBag.png" }
+	],
+	"json": [
+		{ "id": "assets/test-map.json" }
+	]
+}
