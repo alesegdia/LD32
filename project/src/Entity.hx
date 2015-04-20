@@ -262,7 +262,7 @@ class EntityFactory {
 
 	static public function SpawnMoneyBag(x, y) {
 		var pickup = new Pickup(x,y,Textures.MONEYBAG,function(player){
-			player.money += 100;
+			player.money += 5000;
 
 			EntityFactory.SpawnIndicator(Player.position.x, Player.position.y, 100);
 		});
@@ -498,7 +498,7 @@ class Player extends Entity {
 	override public function update() {
 
 		if( gotCreditCard ) {
-			leftCreditCard = haxe.Timer.stamp() + 5.0;
+			leftCreditCard = haxe.Timer.stamp() + 25.0;
 			gotCreditCard = false;
 		}
 		if( haxe.Timer.stamp() > this.leftCreditCard ) {
