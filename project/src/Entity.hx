@@ -719,6 +719,7 @@ class Enemy extends Entity {
 			body.velocity.x *= 0.95;
 			body.velocity.y *= 0.95;
 			happySprite.visible = true;
+			body.space = null;
 			anim.animation = "heroStand";
 		}
 		}
