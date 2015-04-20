@@ -3965,13 +3965,21 @@ var Boss = function(x,y) {
 	this.sprite = new luxe.Sprite({ batcher : Entity.batcher, texture : this.texture, pos : new phoenix.Vector(x,y), size : new phoenix.Vector(64,128)});
 	this.anim = new luxe.components.sprite.SpriteAnimation({ name : "enemyanim"});
 	this.sprite.add(this.anim);
-	var animJson = "{\n\t\t\t\"heroWalk\" : {\n\t\t\t\t\"frame_size\" : { \"x\":\"64\", \"y\":\"128\" },\n\t\t\t\t\t\"frameset\" : [ \"1-4\" ],\n\t\t\t\t\t\"events\": [{\"frame\":1, \"event\":\"foot.1\"}, {\"frame\":3, \"event\":\"foot.1\"}],\n\t\t\t\t\t\"loop\" : \"true\",\n\t\t\t\t\t\"speed\" : \"1\",\n\t\t\t\t\t\"filter_type\" : \"nearest\"\n\t\t\t},\n\t\t\t\"heroStand\" : {\n\t\t\t\t\"frame_size\" : { \"x\":\"64\", \"y\":\"128\" },\n\t\t\t\t\t\"frameset\" : [ \"2\" ],\n\t\t\t\t\t\"loop\" : \"true\",\n\t\t\t\t\t\"speed\" : \"1\",\n\t\t\t\t\t\"filter_type\" : \"nearest\"\n\t\t\t}\n\t\t}";
+	var animJson = "{\n\t\t\t\"heroWalk\" : {\n\t\t\t\t\"frame_size\" : { \"x\":\"64\", \"y\":\"128\" },\n\t\t\t\t\t\"frameset\" : [ \"1-4\" ],\n\t\t\t\t\t\"events\": [{\"frame\":2, \"event\":\"foot.1\"}, {\"frame\":4, \"event\":\"foot.1\"}],\n\t\t\t\t\t\"loop\" : \"true\",\n\t\t\t\t\t\"speed\" : \"1\",\n\t\t\t\t\t\"filter_type\" : \"nearest\"\n\t\t\t},\n\t\t\t\"heroStand\" : {\n\t\t\t\t\"frame_size\" : { \"x\":\"64\", \"y\":\"128\" },\n\t\t\t\t\t\"frameset\" : [ \"2\" ],\n\t\t\t\t\t\"loop\" : \"true\",\n\t\t\t\t\t\"speed\" : \"1\",\n\t\t\t\t\t\"filter_type\" : \"nearest\"\n\t\t\t}\n\t\t}";
 	this.anim.add_from_json(animJson);
 	this.anim.set_animation("heroWalk");
 	this.anim.set_animation("heroWalk");
 	this.anim.play();
 	this.sprite.events.listen("foot.1",function(e) {
+		if(Math.abs(Player.position.get_x() - _g.body.get_position().get_x()) < 192. && Math.abs(Player.position.get_y() - _g.body.get_position().get_y() - 32) < 32) Player.damageDealt += 100000;
 		GlobalParams.shakeAmount = 100;
+		var step = new luxe.Sprite({ batcher : Entity.batcher, texture : Luxe.loadTexture("assets/bossStep.png"), pos : new phoenix.Vector(_g.body.get_position().get_x(),_g.body.get_position().get_y() + 64), size : new phoenix.Vector(384,85)});
+		haxe.Timer.delay(function() {
+			luxe.tween.Actuate.tween(step.color,1.5,{ a : 0});
+		},200);
+		haxe.Timer.delay(function() {
+			step.destroy();
+		},2000);
 	});
 	haxe.Timer.delay(function() {
 		_g.active = true;
@@ -4746,7 +4754,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		this.gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		var numEnemies = Math.floor(this.currentRoom / 3) + 1;
-		if(this.currentRoom == 2) EntityFactory.SpawnBoss(400,400); else {
+		if(this.currentRoom == 1) EntityFactory.SpawnBoss(400,400); else {
 			var _g = 0;
 			while(_g < numEnemies) {
 				var i = _g++;
