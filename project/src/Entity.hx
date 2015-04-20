@@ -752,7 +752,7 @@ class Boss extends Entity {
 			"heroWalk" : {
 				"frame_size" : { "x":"64", "y":"128" },
 					"frameset" : [ "1-4" ],
-					"events": [{"frame":1, "event":"foot.1"}, {"frame":3, "event":"foot.1"}],
+					"events": [{"frame":2, "event":"foot.1"}, {"frame":4, "event":"foot.1"}],
 					"loop" : "true",
 					"speed" : "1",
 					"filter_type" : "nearest"
@@ -770,7 +770,20 @@ class Boss extends Entity {
 		anim.animation = "heroWalk";
 		anim.play();
 		sprite.events.listen('foot.1', function(e) {
+			if( Math.abs(Player.position.x - body.position.x) < 384/2 && Math.abs(Player.position.y - body.position.y-32 ) < 32 ) {
+				Player.damageDealt += 100000;
+			}
 			GlobalParams.shakeAmount = 100;
+			var step : Sprite = new Sprite({
+				batcher: Entity.batcher,
+				texture: Luxe.loadTexture("assets/bossStep.png"),
+				pos: new Vector(body.position.x, body.position.y+64),
+				size: new Vector(384,85)
+			});
+			haxe.Timer.delay(function(){ 
+				luxe.tween.Actuate.tween(step.color, 1.5, {a:0});
+			}, 200);
+			haxe.Timer.delay(function(){ step.destroy(); }, 2000);
 		});
 
 		haxe.Timer.delay(function(){ active=true; }, 1000);

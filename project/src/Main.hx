@@ -173,7 +173,7 @@ class Main extends luxe.Game {
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		var numEnemies : Int = Math.floor(currentRoom/3) + 1;
-		if( currentRoom == 2 ) {
+		if( currentRoom == 1 ) {
 			EntityFactory.SpawnBoss(400,400);
 		} else {
 			for( i in 0 ... numEnemies ) {
