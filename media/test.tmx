@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="32" tileheight="32" nextobjectid="1">
- <tileset firstgid="1" name="image.axd" tilewidth="32" tileheight="32">
-  <image source="image.axd.png" width="512" height="512"/>
+ <tileset firstgid="1" name="collision" tilewidth="32" tileheight="32">
+  <image source="../project/assets/test-tiles.png" width="64" height="32"/>
+  <tile id="0"/>
+  <tile id="1"/>
+ </tileset>
+ <tileset firstgid="3" name="colorTiles" tilewidth="32" tileheight="32">
+  <image source="colorTiles.png" width="224" height="32"/>
+  <tile id="0"/>
+  <tile id="1"/>
+  <tile id="2"/>
+  <tile id="3"/>
+  <tile id="4"/>
+  <tile id="5"/>
+  <tile id="6"/>
+ </tileset>
+ <tileset firstgid="10" name="main" tilewidth="32" tileheight="32">
+  <image source="tileset.png" width="512" height="512"/>
   <tile id="0"/>
   <tile id="1"/>
   <tile id="2"/>
@@ -259,34 +274,24 @@
   <tile id="254"/>
   <tile id="255"/>
  </tileset>
- <tileset firstgid="257" name="collision" tilewidth="32" tileheight="32">
-  <image source="../project/assets/test-tiles.png" width="64" height="32"/>
-  <tile id="0"/>
-  <tile id="1"/>
- </tileset>
- <tileset firstgid="259" name="colorTiles" tilewidth="32" tileheight="32">
-  <image source="colorTiles.png" width="224" height="32"/>
-  <tile id="0"/>
-  <tile id="1"/>
-  <tile id="2"/>
-  <tile id="3"/>
-  <tile id="4"/>
-  <tile id="5"/>
-  <tile id="6"/>
- </tileset>
  <layer name="collisionLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjZGRgYCSAmaCYkDp09ZTiUfMGn3nUMotWeLCH30g0j5rlCwC/UQNL
+   eJxjZGBgYCSAmaCYkDpi8WAxj4lMPJLNI9cMeuHBHn60NG+w5zdqmAcAJUABww==
   </data>
  </layer>
  <layer name="baseLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJyNkrsOwjAMRS0ec8PCmrKwUhYmngsTRWJhAiQK4v8/gRsllizjhA5HqZL49Lp1R0Qv8AZd5rkCrnAun6dgDTYFPKj/3NmCCZiDE2hFjtKqcan2DGZglXy6tk65KuPMG3vBtwTH5OOedL108r6VPfgO4JrJZ9XzO2vDG3wX8DF8uSzOcErfEyyM+7k+2ePJztiAnfp2XqFdOqP07ynOn+zXiXqZV+INV+hXzp/uS7p1Zq9cDf3On5VD5smd5eavzeToA/fL83cD9wJcU7rzoDh/QzAqrGOKMxD+3aDH/S8RjyzF
+   eJyNkjsPgkAQhKkVn6XiI5YKvkoV7RW1V9T//y8ck91kMgGh+DK5ZW9ubo9uEAS9CmKQ1OjrgylogCYIQcs0pLX7ad21DTpgZn4DMAQRGJlGtD6AtKDuOgYT8puDBeWIa5IYS7Aivx3YWw7uS6xWhPf9ch/BqSRfLL3JH7zvXz4+m30VPpfzxQX7dT46U56Demu97D10tr4nFQ+9b0r7i96Az/R+nV+d/0U9OZO+r+Yr+0f0W1ridwYXkIGraUZrz6111xu4k98DPEEOXqY5rd1P665v8DG/NdhU4Her6tuCL6qVOEE=
   </data>
  </layer>
  <layer name="spawnLayer" width="20" height="15">
   <data encoding="base64" compression="zlib">
-   eJxjYBgF1AbMjNRVNwoGFxiN34EDACosABE=
+   eJxjYBgF1AbMVFY3CgYXGI3fgQMAINAADQ==
+  </data>
+ </layer>
+ <layer name="doorLayer" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAMBKGYWiAHiHOpaF4NENdS0bxRgBsoAHEXEHdTYEYfEPcDsRLUvFlAPJsC8+YB8XyoeaMAE6wB4rVUNG8PEO+lonmGUEwMAAAdIwpR
   </data>
  </layer>
 </map>
