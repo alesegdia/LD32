@@ -335,8 +335,9 @@ class Cajero extends Entity {
 	public function new(x:Float,y:Float) {
 		sprite = new Sprite({
 				batcher: Entity.batcher,
-			texture: Luxe.loadTexture("assets/test-cajero.png"),
+			texture: Luxe.loadTexture("assets/atm.png"),
 			size: new Vector(32,64),
+			uv: new luxe.Rectangle(0,0,32,64),
 			pos: new Vector(x,y)
 		});
 		sprite.texture.filter = nearest;
@@ -355,10 +356,12 @@ class Cajero extends Entity {
 
 	public function Hide() {
 		body.space = null;
+		sprite.uv.x = 0;
 		sprite.visible = false;
 	}
 
 	public function Open() {
+		sprite.uv.x = 32;
 		for( i in 0 ... 10 ) {
 			EntityFactory.SpawnMoneyBag(320, 400);
 		}
@@ -464,7 +467,7 @@ class Player extends Entity {
 		anim.play();
 
 		body = new Body(BodyType.DYNAMIC);
-		body.shapes.add(new Circle(16));
+		body.shapes.add(new Circle(16, new Vec2(0,16)));
 		body.position.setxy(200,200);
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.PLAYER);
@@ -626,12 +629,15 @@ class Enemy extends Entity {
 			pos: new Vector(0,0),
 			size: new Vector(32,32)
 		});
+		happySprite.transform.local.pos.y -= 16;
+		happySprite.transform.local.pos.x += 10;
 		happySprite.visible = false;
 
 		happySprite.parent = sprite;
 
 		body = new Body(BodyType.DYNAMIC);
-		body.shapes.add(new Circle(16));
+		body.shapes.add(new Circle(16, new Vec2(0,16)));
+		body.shapes.add(new Circle(16, new Vec2(0,-4)));
 		body.position.setxy(x,y);
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.ENEMY);
