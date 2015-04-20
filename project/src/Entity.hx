@@ -244,6 +244,11 @@ class EntityFactory {
 		world.AddEntity(enemy);
 		return enemy;
 	}
+	static public function SpawnBoss(x, y) {
+		var enemy = new Boss(480, 300);
+		world.AddEntity(enemy);
+		return enemy;
+	}
 
 	static public function Spawn100EPickup(x, y) {
 		var pickup = new Pickup(x,y,Textures.PICKUP100,function(player){
@@ -365,7 +370,7 @@ class Cajero extends Entity {
 	public function Open(howMuch) {
 		sprite.uv.x = 32;
 		for( i in 0 ... Math.round(howMuch) ) {
-			EntityFactory.SpawnMoneyBag(320, 400);
+			EntityFactory.SpawnMoneyBag(480, 320);
 		}
 	}
 
@@ -712,6 +717,143 @@ class Enemy extends Entity {
 		}
 
 		super.update();
+	}
+}
+
+class GlobalParams {
+	public static var shakeAmount : Float = 0;
+}
+
+class Boss extends Entity {
+
+	var facing : Vector = new Vector(0,0);
+	var health : Int = 1000;
+	var attackRate : Float = 0.5;
+	var attackPower : Int = 10000;
+	var nextAttack : Float = haxe.Timer.stamp();
+	public static var numEnemiesActive : Int = 0;
+	var anim : SpriteAnimation;
+	var active : Bool = false;
+
+	var happySprite : Sprite;
+
+	public function new( x, y ) {
+		Enemy.numEnemiesActive += 1;
+		texture = Luxe.loadTexture("assets/bossWalk.png");
+		sprite = new Sprite({
+			batcher: Entity.batcher,
+			texture: texture,
+			pos: new Vector(x,y),
+			size: new Vector(64,128)
+		});
+		anim = new SpriteAnimation({ name: "enemyanim" });
+		sprite.add(anim);
+		var animJson = '{
+			"heroWalk" : {
+				"frame_size" : { "x":"64", "y":"128" },
+					"frameset" : [ "1-4" ],
+					"events": [{"frame":1, "event":"foot.1"}, {"frame":3, "event":"foot.1"}],
+					"loop" : "true",
+					"speed" : "1",
+					"filter_type" : "nearest"
+			},
+			"heroStand" : {
+				"frame_size" : { "x":"64", "y":"128" },
+					"frameset" : [ "2" ],
+					"loop" : "true",
+					"speed" : "1",
+					"filter_type" : "nearest"
+			}
+		}';
+		anim.add_from_json(animJson);
+		anim.animation = "heroWalk";
+		anim.animation = "heroWalk";
+		anim.play();
+		sprite.events.listen('foot.1', function(e) {
+			GlobalParams.shakeAmount = 100;
+		});
+
+		haxe.Timer.delay(function(){ active=true; }, 1000);
+		happySprite = new Sprite({
+				batcher: Entity.batcher,
+			texture: Textures.HAPPY,
+			pos: new Vector(0,0),
+			size: new Vector(32,32)
+		});
+		happySprite.transform.local.pos.y -= 16;
+		happySprite.transform.local.pos.x += 10;
+		happySprite.visible = false;
+
+		happySprite.parent = sprite;
+
+		body = new Body(BodyType.DYNAMIC);
+		body.shapes.add(new Circle(32, new Vec2(0,16)));
+		body.shapes.add(new Circle(32, new Vec2(0,-4)));
+		body.position.setxy(x,y);
+		body.space = Luxe.physics.nape.space;
+		body.cbTypes.add(CollisionLayers.ENEMY);
+		body.setShapeFilters(CollisionFilters.ENEMY);
+	}
+
+	var speedx = 75;
+	var speedy = 60;
+	var yOffset = {val:0};
+	var finalVelocity : Vec2 = new Vec2(0,0);
+	override public function update() {
+		this.sprite.color.g = 0.5;
+		this.sprite.color.b = 0.5;
+		this.body.rotation = 0;
+
+		if( active ) {
+		if( health > 0 ) {
+			var ray = nape.geom.Ray.fromSegment(body.position, Player.position);
+			ray.maxDistance = 500;
+			var rayResult = Luxe.physics.nape.space.rayCast(ray, false, CollisionFilters.RAYFILTER);
+			var playerInSight = false;
+			if( rayResult != null ) {
+				if( rayResult.shape.filter == CollisionFilters.PLAYER ) {
+					playerInSight = true;
+				}
+			}
+			if( playerInSight ) {
+				finalVelocity.x = this.body.position.x - Player.position.x;
+				finalVelocity.y = this.body.position.y - Player.position.y;
+				this.body.velocity = finalVelocity.normalise();
+				this.body.velocity.x = -this.body.velocity.x * speedx;
+				this.body.velocity.y = -this.body.velocity.y * speedy;
+				if( this.body.velocity.x < 0 ) this.sprite.flipx = true;
+				else this.sprite.flipx = false;
+			} else {
+				this.body.velocity.x = 0;
+				this.body.velocity.y = 0;
+			}
+
+			var playerNear = false;
+			ray = nape.geom.Ray.fromSegment(body.position, Player.position);
+			ray.maxDistance = 40;
+			rayResult = Luxe.physics.nape.space.rayCast(ray);
+			if( rayResult != null ) {
+				if( rayResult.shape.filter == CollisionFilters.PLAYER ) {
+					playerNear = true;
+				}
+			}
+			if( playerNear && nextAttack < haxe.Timer.stamp() ) {
+				Player.damageDealt += attackPower;
+				nextAttack = haxe.Timer.stamp() + attackRate;
+				EntityFactory.SpawnMoneyExplosion(Player.position.x, Player.position.y);
+			}
+		}
+		else
+		{
+			body.velocity.x *= 0.95;
+			body.velocity.y *= 0.95;
+			happySprite.visible = true;
+			anim.animation = "heroStand";
+		}
+		}
+
+		super.update();
+		sprite.transform.pos.y = body.position.y + yOffset.val;
 	}
 }
 

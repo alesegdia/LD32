@@ -42,6 +42,7 @@ import Entity.CollisionLayers;
 import Entity.CollisionFilters;
 import Entity.Textures;
 import Entity.Cajero;
+import Entity.GlobalParams;
 
 class Main extends luxe.Game {
 
@@ -172,8 +173,12 @@ class Main extends luxe.Game {
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		var numEnemies : Int = Math.floor(currentRoom/3) + 1;
-		for( i in 0 ... numEnemies ) {
-			SpawnRandomEnemy();
+		if( currentRoom == 2 ) {
+			EntityFactory.SpawnBoss(400,400);
+		} else {
+			for( i in 0 ... numEnemies ) {
+				SpawnRandomEnemy();
+			}
 		}
 		if( Math.random() < 0.70 ) SpawnRandomPickup();
     	if( createPlayer )
@@ -219,7 +224,7 @@ class Main extends luxe.Game {
 			enem.sprite.color.b = 0;
 			luxe.tween.Actuate.tween(enem.sprite.color, 0.3, {r:1, b:1});
 			proj.isDead = true;
-			shakeAmount += 10;
+			GlobalParams.shakeAmount += 10;
 			if( enem.health > 0 ) {
 				enem.health = enem.health - proj.power;
 				if( enem.health <= 0 ) {
@@ -297,7 +302,7 @@ class Main extends luxe.Game {
 						CloseAllDoors();
 						okgo = true;
 					});
-					cajero = new Cajero(320,320);
+					cajero = new Cajero(480,300);
 					//gameWorld.AddEntity(cajero);
 					trace("FINISH LOAD!");
 					haxe.Timer.delay(function() { FadeIn(); } ,2000);
@@ -319,7 +324,7 @@ class Main extends luxe.Game {
 				RegenScene(false);
 				trace(leftDoorTiles[0].body.position);
 				player.body.position.x = 40;
-				player.body.position.y = Luxe.screen.h/2;
+				player.body.position.y = (Luxe.screen.h+96)/2;
 				CloseAllDoors();
 			} else {
 			v = rightDoorTiles[1].sprite.transform.pos;
@@ -329,7 +334,7 @@ class Main extends luxe.Game {
 				RegenScene(false);
 				trace(leftDoorTiles[0].body.position);
 				player.body.position.x = 40;
-				player.body.position.y = Luxe.screen.h/2;
+				player.body.position.y = (Luxe.screen.h+96)/2;
 				CloseAllDoors();
 			}
 			}
@@ -340,7 +345,7 @@ class Main extends luxe.Game {
 			if( dist < 40 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32 - 40;
-				player.body.position.y = Luxe.screen.h/2;
+				player.body.position.y = (Luxe.screen.h+96)/2;
 				CloseAllDoors();
 			} else {
 			v = leftDoorTiles[1].sprite.transform.pos;
@@ -349,7 +354,7 @@ class Main extends luxe.Game {
 			if( dist < 40 ) {
 				RegenScene(false);
 				player.body.position.x = tilemap.width*32 - 40;
-				player.body.position.y = Luxe.screen.h/2;
+				player.body.position.y = (Luxe.screen.h+96)/2;
 				CloseAllDoors();
 			}
 			}
@@ -422,8 +427,8 @@ class Main extends luxe.Game {
 
     override function update(dt:Float) {
 		if( okgo ){
-			ShakeCam(shakeAmount);
-			shakeAmount *= 0.90;
+			ShakeCam(GlobalParams.shakeAmount);
+			GlobalParams.shakeAmount *= 0.90;
 			gameWorld.Step();
 			CheckWarp();
 			if( Enemy.numEnemiesActive == 0 ) {
@@ -431,11 +436,11 @@ class Main extends luxe.Game {
 				{
 					if(!cajeroComing) {
 						cajeroComing = true;
-						haxe.Timer.delay(function() { OpenAllDoors(); shakeAmount += 300; cajero.Show(); } ,2000);
+						haxe.Timer.delay(function() { OpenAllDoors(); GlobalParams.shakeAmount += 300; cajero.Show(); } ,2000);
 					}
 				}
 				trace("OPEN!");
-				var dist = nape.geom.Vec2.distance(new Vec2(320,320), Player.position);
+				var dist = nape.geom.Vec2.distance(new Vec2(480,300), Player.position);
 				trace(dist);
 				if( dist < 64 && Luxe.input.inputdown("open") && !wasOpened ) {
 					wasOpened = true;
