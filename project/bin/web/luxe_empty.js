@@ -3944,6 +3944,7 @@ Enemy.prototype = $extend(Entity.prototype,{
 					return $r;
 				}(this)) * 0.95);
 				this.happySprite.set_visible(true);
+				this.body.set_space(null);
 				this.anim.set_animation("heroStand");
 			}
 		}
@@ -3962,7 +3963,7 @@ var Boss = function(x,y) {
 	this.nextAttack = haxe.Timer.stamp();
 	this.attackPower = 10000;
 	this.attackRate = 0.5;
-	this.health = 1000;
+	this.health = 100000;
 	this.facing = new phoenix.Vector(0,0);
 	var _g = this;
 	Entity.call(this);
@@ -3976,7 +3977,7 @@ var Boss = function(x,y) {
 	this.anim.set_animation("heroWalk");
 	this.anim.set_animation("heroWalk");
 	this.anim.play();
-	if(GlobalParams.isPause) this.anim.set_animation("heroStand");
+	if(GlobalParams.isPause) this.anim.set_animation("heroStand"); else this.anim.set_animation("heroWalk");
 	this.sprite.events.listen("foot.1",function(e) {
 		if(Math.abs(Player.position.get_x() - _g.body.get_position().get_x()) < 192. && Math.abs(Player.position.get_y() - _g.body.get_position().get_y() - 32) < 32) {
 			Player.damageDealt += 100000;
@@ -4766,7 +4767,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		this.gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		var numEnemies = Math.floor(this.currentRoom / 2) + 1;
-		if(this.currentRoom == 7) EntityFactory.SpawnBoss(400,400); else {
+		if(this.currentRoom == 2) EntityFactory.SpawnBoss(400,400); else {
 			var _g = 0;
 			while(_g < numEnemies) {
 				var i = _g++;
