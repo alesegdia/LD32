@@ -387,10 +387,10 @@ class Door extends Entity {
 	public var isOpened : Bool;
 	var doorType : DoorType;
 
-	public function new(x:Float,y:Float) {
+	public function new(x:Float,y:Float, orientation:String) {
 		sprite = new Sprite({
 				batcher: Entity.batcher,
-			texture: Luxe.loadTexture("assets/test-door.png"),
+			texture: Luxe.loadTexture("assets/door.png"),
 			uv: new luxe.Rectangle(0,0,32,32),
 			size: new Vector(32,32),
 			pos: new Vector(x+16,y+16)
@@ -401,6 +401,12 @@ class Door extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.WALL);
 		body.setShapeFilters(CollisionFilters.WALL);
+		switch(orientation) {
+			case "left": sprite.rotation_z = 270;
+			case "down": sprite.rotation_z = 0;
+			case "right": sprite.rotation_z = 90;
+			case "up": sprite.rotation_z = 180;
+		}
 	}
 
 	public function Open() {

@@ -300,10 +300,10 @@ class Main extends luxe.Game {
 						trace(doorList.length);
 						for( i in 0 ... doorList.length ) {
 							var v = doorList[i];
-							if( v.x == 0 && v.y != 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32));
-							else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32));
-							else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32));
-							else downDoorTiles.push( new Door(v.x*32, v.y*32) );
+							if( v.x == 0 && v.y != 0 ) leftDoorTiles.push(new Door(v.x*32, v.y*32, "left"));
+							else if( v.x == that.tilemap.width-1 ) rightDoorTiles.push(new Door(v.x*32, v.y*32, "right"));
+							else if( v.y != 0 && v.x != that.tilemap.width ) upDoorTiles.push(new Door(v.x*32, v.y*32, "up"));
+							else downDoorTiles.push( new Door(v.x*32, v.y*32, "down") );
 						}
 						enemySpawnList = GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 						pickupSpawnList = GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
@@ -452,7 +452,7 @@ class Main extends luxe.Game {
 	var statsText:Text;
 
     override function update(dt:Float) {
-    	GlobalParams.isPause = okgo;
+    	//GlobalParams.isPause = okgo;
 		if( player != null && player.money < 0 ) {
 			lost = true;
 			okgo=false;

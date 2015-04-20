@@ -2329,9 +2329,9 @@ Cajero.prototype = $extend(Entity.prototype,{
 	}
 	,__class__: Cajero
 });
-var Door = function(x,y) {
+var Door = function(x,y,orientation) {
 	Entity.call(this);
-	this.sprite = new luxe.Sprite({ batcher : Entity.batcher, texture : Luxe.loadTexture("assets/test-door.png"), uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(x + 16,y + 16)});
+	this.sprite = new luxe.Sprite({ batcher : Entity.batcher, texture : Luxe.loadTexture("assets/door.png"), uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(x + 16,y + 16)});
 	this.sprite.texture.set_filter(phoenix.FilterType.nearest);
 	this.body = new nape.phys.Body((function($this) {
 		var $r;
@@ -2347,6 +2347,20 @@ var Door = function(x,y) {
 	this.body.set_space(Luxe.physics.nape.space);
 	this.body.get_cbTypes().add(CollisionLayers.WALL);
 	this.body.setShapeFilters(CollisionFilters.WALL);
+	switch(orientation) {
+	case "left":
+		this.sprite.set_rotation_z(270);
+		break;
+	case "down":
+		this.sprite.set_rotation_z(0);
+		break;
+	case "right":
+		this.sprite.set_rotation_z(90);
+		break;
+	case "up":
+		this.sprite.set_rotation_z(180);
+		break;
+	}
 };
 Door.__name__ = ["Door"];
 Door.__super__ = Entity;
@@ -3747,7 +3761,7 @@ var Player = function() {
 	Luxe.input.bind_key("down",snow.system.input.Keycodes.down);
 	Luxe.input.bind_key("shoot",snow.system.input.Keycodes.key_z);
 	Luxe.input.bind_key("open",snow.system.input.Keycodes.key_x);
-	this.text = new luxe.Text({ pos : new phoenix.Vector(48,4), point_size : 20, text : "0€"},{ fileName : "Entity.hx", lineNumber : 491, className : "Player", methodName : "new"});
+	this.text = new luxe.Text({ pos : new phoenix.Vector(48,4), point_size : 20, text : "0€"},{ fileName : "Entity.hx", lineNumber : 497, className : "Player", methodName : "new"});
 	this.inUseWeapon = new luxe.Sprite({ texture : Textures.PICKUP500, batcher : Entity.batcher, uv : new phoenix.Rectangle(0,0,32,32), size : new phoenix.Vector(32,32), pos : new phoenix.Vector(20,20)});
 };
 Player.__name__ = ["Player"];
@@ -4887,7 +4901,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 					while(_g21 < _g11) {
 						var i1 = _g21++;
 						var v = _g.doorList[i1];
-						if(v.x == 0 && v.y != 0) _g.leftDoorTiles.push(new Door(v.x * 32,v.y * 32)); else if(v.x == that.tilemap.width - 1) _g.rightDoorTiles.push(new Door(v.x * 32,v.y * 32)); else if(v.y != 0 && v.x != that.tilemap.width) _g.upDoorTiles.push(new Door(v.x * 32,v.y * 32)); else _g.downDoorTiles.push(new Door(v.x * 32,v.y * 32));
+						if(v.x == 0 && v.y != 0) _g.leftDoorTiles.push(new Door(v.x * 32,v.y * 32,"left")); else if(v.x == that.tilemap.width - 1) _g.rightDoorTiles.push(new Door(v.x * 32,v.y * 32,"right")); else if(v.y != 0 && v.x != that.tilemap.width) _g.upDoorTiles.push(new Door(v.x * 32,v.y * 32,"up")); else _g.downDoorTiles.push(new Door(v.x * 32,v.y * 32,"down"));
 					}
 					_g.enemySpawnList = _g.GetNonEmptyTiles(that.tilemap.layers.get("enemySpawnLayer"));
 					_g.pickupSpawnList = _g.GetNonEmptyTiles(that.tilemap.layers.get("pickupSpawnLayer"));
@@ -5000,7 +5014,6 @@ Main.prototype = $extend(luxe.Game.prototype,{
 	}
 	,update: function(dt) {
 		var _g = this;
-		GlobalParams.isPause = this.okgo;
 		if(this.player != null && this.player.money < 0) {
 			this.lost = true;
 			this.okgo = false;
