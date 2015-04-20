@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="15" tilewidth="32" tileheight="32" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="32" tileheight="32">
+  <image source="../project/assets/test-tiles.png" width="64" height="32"/>
+ </tileset>
+ <tileset firstgid="3" name="colorTiles" tilewidth="32" tileheight="32">
+  <image source="colorTiles.png" width="224" height="32"/>
+ </tileset>
+ <tileset firstgid="10" name="main" tilewidth="32" tileheight="32">
+  <image source="tileset.png" width="512" height="512"/>
+ </tileset>
+ <layer name="collisionLayer" width="20" height="15" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgYCSAmaCYkDpi8WAxj4lMPJLNI9cMeuHBHn60NG+w5zdqmAcAJUABww==
+  </data>
+ </layer>
+ <layer name="baseLayer" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJy1U7EKAjEMzayn7i7djwb3o+V2F3c99Y/8ZiMmEB6pWMTAI20ufXlJeysiWgsGwUb94PZZwEHc/FawEyR6217P/AJWzpeNEO/hYLc2fZPGCuSxxiJYXnXrQ6AvQy5/QAY/B/pKkFcD4Hy8vhTUw75Ru9X2/Zq+0uDzwNkaV4VzD+2XoV7rDvxZ1FeUb/xSXwn20f1OUK/1RvAb9mvzOzY09f4fxnem9hvrwUn5knJeBIvgqn5xe9OAcfM3wZ3+Y09QyjQU
+  </data>
+ </layer>
+ <layer name="spawnLayer" width="20" height="15" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgF1AbMVFY3CgYXGI3fgQMAINAADQ==
+  </data>
+ </layer>
+ <layer name="doorLayer" width="20" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYMAPeIC4BohrCagDAT0i1BALbEfNGzTm2SKZ101F8/qAeDYVzZtHBbOQzaNF+FEL0NI8WyphkHm+ROA1QLyWCHUg8wAn7RR7
+  </data>
+ </layer>
+</map>
