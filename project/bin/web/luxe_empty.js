@@ -3722,7 +3722,7 @@ var Player = function() {
 	this.gotCreditCard = false;
 	this.leftCreditCard = haxe.Timer.stamp();
 	this.moneyPerShot = 100;
-	this.speed = 200;
+	this.speed = 300;
 	this.shotRate = 0.4;
 	this.nextShot = 0.0;
 	this.facing = new phoenix.Vector(1,0);
@@ -3784,7 +3784,7 @@ Player.prototype = $extend(Entity.prototype,{
 				this.anim.set_speed(6);
 			} else {
 				this.anim.set_speed(12);
-				this.speed = 200;
+				this.speed = 300;
 			}
 			if(Luxe.input.inputdown("up")) {
 				this.body.get_velocity().set_y(-this.speed * 0.7);
@@ -3843,8 +3843,8 @@ Player.prototype = $extend(Entity.prototype,{
 });
 var Enemy = function(x,y) {
 	this.finalVelocity = new nape.geom.Vec2(0,0);
-	this.speedy = 120;
-	this.speedx = 150;
+	this.speedy = 150;
+	this.speedx = 200;
 	this.active = false;
 	this.nextAttack = haxe.Timer.stamp();
 	this.attackPower = 10000;
@@ -3975,9 +3975,9 @@ var Boss = function(x,y) {
 	this.speedx = 75;
 	this.active = false;
 	this.nextAttack = haxe.Timer.stamp();
-	this.attackPower = 10000;
+	this.attackPower = 100000;
 	this.attackRate = 0.5;
-	this.health = 100000;
+	this.health = 10000;
 	this.facing = new phoenix.Vector(0,0);
 	var _g = this;
 	Entity.call(this);

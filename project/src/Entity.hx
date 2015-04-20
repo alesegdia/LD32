@@ -432,7 +432,7 @@ class Player extends Entity {
 	var facing : Vector = new Vector(1,0);
 	var nextShot = 0.0;
 	var shotRate = 0.4;
-	var speed = 200;
+	var speed = 300;
 	public var moneyPerShot = 100;
 	public var leftCreditCard : Float = haxe.Timer.stamp();
 	public var gotCreditCard : Bool = false;
@@ -532,7 +532,7 @@ class Player extends Entity {
 			anim.speed = 6;
 		} else {
 			anim.speed = 12;
-			speed = 200;
+			speed = 300;
 		}
     	if( Luxe.input.inputdown("up") ) {
     		this.body.velocity.y = -speed * 0.7;
@@ -674,8 +674,8 @@ class Enemy extends Entity {
 
 	}
 
-	var speedx = 150;
-	var speedy = 120;
+	var speedx = 200;
+	var speedy = 150;
 	var finalVelocity : Vec2 = new Vec2(0,0);
 	override public function update() {
 		this.body.rotation = 0;
@@ -746,9 +746,9 @@ class GlobalParams {
 class Boss extends Entity {
 
 	var facing : Vector = new Vector(0,0);
-	var health : Int = 100000;
+	var health : Int = 10000;
 	var attackRate : Float = 0.5;
-	var attackPower : Int = 10000;
+	var attackPower : Int = 100000;
 	var nextAttack : Float = haxe.Timer.stamp();
 	public static var numEnemiesActive : Int = 0;
 	var anim : SpriteAnimation;
