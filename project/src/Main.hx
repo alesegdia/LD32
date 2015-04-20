@@ -29,6 +29,7 @@ import nape.callbacks.CbEvent;
 import luxe.tilemaps.Tilemap.TileLayer;
 
 import phoenix.Texture;
+import phoenix.Camera;
 import phoenix.geometry.CircleGeometry;
 import Entity.Player;
 import Entity.Enemy;
@@ -59,6 +60,8 @@ class Main extends luxe.Game {
 	var downDoorTiles : Array<Door> = new Array<Door>();
 	var leftDoorTiles : Array<Door> = new Array<Door>();
 	var rightDoorTiles : Array<Door> = new Array<Door>();
+
+	var camera : Camera;
 
 	public function projToWall( collision: InteractionCallback ):Void {
 		collision.int1.userData.entity.isDead = true;
@@ -160,9 +163,11 @@ class Main extends luxe.Game {
 		OpenDoors(downDoorTiles);
 	}
 
+	var cajeroComing:Bool = false;
 	public function RegenScene( createPlayer : Bool ) {
 		wasOpened = false;
 		cajero.Hide();
+		cajeroComing = false;
 		gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		SpawnRandomEnemy();
@@ -197,8 +202,12 @@ class Main extends luxe.Game {
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.ENEMY, function(collision:InteractionCallback){
 			var proj = cast(collision.int1.userData.entity);
 			var enem = cast(collision.int2.userData.entity);
-				EntityFactory.SpawnIndicator(collision.int1.castBody.position.x, collision.int1.castBody.position.y, cast(proj.power,Int));
+			EntityFactory.SpawnIndicator(collision.int1.castBody.position.x, collision.int1.castBody.position.y, cast(proj.power,Int));
+			enem.sprite.color.r = 0;
+			enem.sprite.color.b = 0;
+			luxe.tween.Actuate.tween(enem.sprite.color, 0.3, {r:1, b:1});
 			proj.isDead = true;
+			shakeAmount += 10;
 			if( enem.health > 0 ) {
 				enem.health = enem.health - proj.power;
 				if( enem.health <= 0 ) {
@@ -230,8 +239,11 @@ class Main extends luxe.Game {
 					//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 					Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
 
-					EntityFactory.Spawn100EPickup(400,400);
-
+					camera = new Camera();
+					tileBatcher.view = camera;
+					entityBatcher.view = camera;
+					Luxe.renderer.add_batch(tileBatcher);
+					Luxe.renderer.add_batch(entityBatcher);
 
 					var that = this;
 					Luxe.loadText('assets/test-map.json', function(res) {
@@ -371,14 +383,29 @@ class Main extends luxe.Game {
 
 	var cajero:Cajero;
 	var wasOpened:Bool = false;
+	var shakeAmount:Float = 10;
+
+	function ShakeCam(howMuch:Float) {
+		camera.pos.x = (Math.random()-0.5) * 2 * howMuch;
+		camera.pos.y = (Math.random()-0.5) * 2 * howMuch;
+	}
+
     override function update(dt:Float) {
 		if( okgo ){
+			ShakeCam(shakeAmount);
+			shakeAmount *= 0.90;
 			gameWorld.Step();
 			CheckWarp();
 			if( Enemy.numEnemiesActive == 0 ) {
+				if(!cajero.sprite.visible)
+				{
+					if(!cajeroComing) {
+						cajeroComing = true;
+						haxe.Timer.delay(function() { shakeAmount += 300; cajero.Show(); } ,2000);
+					}
+				}
 				OpenAllDoors();
 				trace("OPEN!");
-				cajero.Show();
 				var dist = nape.geom.Vec2.distance(new Vec2(320,320), Player.position);
 				trace(dist);
 				if( dist < 64 && Luxe.input.inputdown("open") && !wasOpened ) {

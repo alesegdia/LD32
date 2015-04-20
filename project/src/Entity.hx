@@ -61,10 +61,11 @@ class CollisionLayers {
 
 class CollisionFilters {
 	public static var PLAYER = new InteractionFilter( 		 1, ~(2) );
-	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1|16) );
+	public static var PROJECTILE = new InteractionFilter( 	 2, ~(1|16|32) );
 	public static var WALL = new InteractionFilter( 	 	 4, ~(0) );
-	public static var ENEMY = new InteractionFilter( 	 	 8, ~(16) );
-	public static var PICKUP = new InteractionFilter( 	 	 16, ~(8|2) );
+	public static var ENEMY = new InteractionFilter( 	 	 8, ~(16|32) );
+	public static var PICKUP = new InteractionFilter( 	 	 16, ~(8|2|32) );
+	public static var RAYFILTER = new InteractionFilter( 	 32, ~(8|16|2) );
 }
 
 class Textures {
@@ -264,7 +265,7 @@ class EntityFactory {
 		var pickup = new Pickup(x,y,Textures.MONEYBAG,function(player){
 			player.money += 5000;
 
-			EntityFactory.SpawnIndicator(Player.position.x, Player.position.y, 100);
+			EntityFactory.SpawnIndicator(Player.position.x, Player.position.y, 5000);
 		});
 		pickup.step = function(pickup) {
 			pickup.body.rotation = 0;
@@ -352,6 +353,7 @@ class Cajero extends Entity {
 	public function Show() {
 		body.space = Luxe.physics.nape.space;
 		sprite.visible = true;
+		body.position.y = -1000;
 	}
 
 	public function Hide() {
@@ -654,7 +656,7 @@ class Enemy extends Entity {
 		if( health > 0 ) {
 			var ray = nape.geom.Ray.fromSegment(body.position, Player.position);
 			ray.maxDistance = 500;
-			var rayResult = Luxe.physics.nape.space.rayCast(ray);
+			var rayResult = Luxe.physics.nape.space.rayCast(ray, false, CollisionFilters.RAYFILTER);
 			var playerInSight = false;
 			if( rayResult != null ) {
 				if( rayResult.shape.filter == CollisionFilters.PLAYER ) {
