@@ -739,7 +739,7 @@ class GlobalParams {
 class Boss extends Entity {
 
 	var facing : Vector = new Vector(0,0);
-	var health : Int = 1000;
+	var health : Int = 100000;
 	var attackRate : Float = 0.5;
 	var attackPower : Int = 10000;
 	var nextAttack : Float = haxe.Timer.stamp();
@@ -782,6 +782,7 @@ class Boss extends Entity {
 		anim.animation = "heroWalk";
 		anim.play();
 		if( GlobalParams.isPause ) anim.animation = "heroStand";
+		else anim.animation = "heroWalk";
 		sprite.events.listen('foot.1', function(e) {
 			if( Math.abs(Player.position.x - body.position.x) < 384/2 && Math.abs(Player.position.y - body.position.y-32 ) < 32 ) {
 				Player.damageDealt += 100000;
