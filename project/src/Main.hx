@@ -47,6 +47,7 @@ class Main extends luxe.Game {
 
 	public var tilemap : TiledMap;
 	public var tileBatcher : phoenix.Batcher;
+	public var fadeBatcher : phoenix.Batcher;
 	var entityBatcher : phoenix.Batcher;
 	var player : Player;
 	var proj : Projectile;
@@ -193,9 +194,17 @@ class Main extends luxe.Game {
 	}
 
 	var currentRoom : Int = 0;
+	var fade:Sprite;
+	function FadeOut() {
+		luxe.tween.Actuate.tween(fade.color, 0.5, {a:1});
+	}
+	function FadeIn() {
+		luxe.tween.Actuate.tween(fade.color, 0.5, {a:0});
+	}
     override function ready() {
 		tileBatcher = Luxe.renderer.create_batcher({ layer: 0 });
-		entityBatcher = Luxe.renderer.create_batcher({ layer: 2 });
+		fadeBatcher = Luxe.renderer.create_batcher({ layer: 2 });
+		entityBatcher = Luxe.renderer.create_batcher({ layer: 1 });
 		Entity.batcher = entityBatcher;
 
 		AddInteractionListener( CollisionLayers.PROJECTILE, CollisionLayers.WALL, projToWall );
@@ -238,12 +247,20 @@ class Main extends luxe.Game {
 					//gameWorld.debugDraw = drawer;
 					//Luxe.physics.nape.debugdraw = gameWorld.debugDraw;
 					Luxe.renderer.clear_color = new Color().rgb(0xaf663a);
+					fade = new Sprite({
+						texture: Luxe.loadTexture("assets/fade.png"),
+						 pos: new Vector(0,0),
+						 size: new Vector(Luxe.screen.w*2.5,Luxe.screen.h*2.5),
+						 batcher: fadeBatcher,
+					});
 
 					camera = new Camera();
 					tileBatcher.view = camera;
 					entityBatcher.view = camera;
+					fadeBatcher.view = camera;
 					Luxe.renderer.add_batch(tileBatcher);
 					Luxe.renderer.add_batch(entityBatcher);
+					Luxe.renderer.add_batch(fadeBatcher);
 
 					var that = this;
 					Luxe.loadText('assets/test-map.json', function(res) {
@@ -280,12 +297,14 @@ class Main extends luxe.Game {
 					cajero = new Cajero(320,320);
 					//gameWorld.AddEntity(cajero);
 					trace("FINISH LOAD!");
+					haxe.Timer.delay(function() { FadeIn(); } ,2000);
 				}});
 
 			preload.load();
 		});
 
     } //ready
+
 
 	var okgo = false;
 	function CheckWarp() {
@@ -401,10 +420,9 @@ class Main extends luxe.Game {
 				{
 					if(!cajeroComing) {
 						cajeroComing = true;
-						haxe.Timer.delay(function() { shakeAmount += 300; cajero.Show(); } ,2000);
+						haxe.Timer.delay(function() { OpenAllDoors(); shakeAmount += 300; cajero.Show(); } ,2000);
 					}
 				}
-				OpenAllDoors();
 				trace("OPEN!");
 				var dist = nape.geom.Vec2.distance(new Vec2(320,320), Player.position);
 				trace(dist);

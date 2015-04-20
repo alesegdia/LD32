@@ -497,8 +497,10 @@ class Player extends Entity {
 		});
 	}
 
+	public var active:Bool = true;
 	override public function update() {
 
+		if( active ) {
 		if( gotCreditCard ) {
 			leftCreditCard = haxe.Timer.stamp() + 25.0;
 			gotCreditCard = false;
@@ -574,6 +576,12 @@ class Player extends Entity {
 			sprite.color.b = 0;
 			luxe.tween.Actuate.tween(sprite.color, 0.3, {r:1, b:1});
 		}
+		}
+		else
+		{
+			body.velocity.x = 0;
+			body.velocity.y = 0;
+		}
 		this.body.rotation = 0;
 		super.update();
 		Player.position.x = this.body.position.x;
@@ -590,6 +598,7 @@ class Enemy extends Entity {
 	var nextAttack : Float = haxe.Timer.stamp();
 	public static var numEnemiesActive : Int = 0;
 	var anim : SpriteAnimation;
+	var active : Bool = false;
 
 	var happySprite : Sprite;
 
@@ -625,6 +634,7 @@ class Enemy extends Entity {
 		anim.animation = "heroWalk";
 		anim.play();
 
+		haxe.Timer.delay(function(){ active=true; }, 1000);
 		happySprite = new Sprite({
 				batcher: Entity.batcher,
 			texture: Textures.HAPPY,
@@ -653,6 +663,7 @@ class Enemy extends Entity {
 	override public function update() {
 		this.body.rotation = 0;
 
+		if( active ) {
 		if( health > 0 ) {
 			var ray = nape.geom.Ray.fromSegment(body.position, Player.position);
 			ray.maxDistance = 500;
@@ -697,6 +708,7 @@ class Enemy extends Entity {
 			body.velocity.y *= 0.95;
 			happySprite.visible = true;
 			anim.animation = "heroStand";
+		}
 		}
 
 		super.update();
