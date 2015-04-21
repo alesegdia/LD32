@@ -3987,7 +3987,7 @@ var Boss = function(x,y) {
 	this.nextAttack = haxe.Timer.stamp();
 	this.attackPower = 100000;
 	this.attackRate = 0.5;
-	this.health = 100;
+	this.health = 10000;
 	this.facing = new phoenix.Vector(0,0);
 	var _g = this;
 	Entity.call(this);
@@ -4795,7 +4795,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 		this.gameWorld.Clear(createPlayer);
 		Enemy.numEnemiesActive = 0;
 		var numEnemies = Math.floor(this.currentRoom / 2) + 1;
-		if(this.currentRoom == 2) EntityFactory.SpawnBoss(400,400); else {
+		if(this.currentRoom == 7) EntityFactory.SpawnBoss(400,400); else {
 			var _g = 0;
 			while(_g < numEnemies) {
 				var i = _g++;

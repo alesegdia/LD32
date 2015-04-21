@@ -767,7 +767,7 @@ class GlobalParams {
 class Boss extends Entity {
 
 	var facing : Vector = new Vector(0,0);
-	var health : Int = 100;
+	var health : Int = 10000;
 	var attackRate : Float = 0.5;
 	var attackPower : Int = 100000;
 	var nextAttack : Float = haxe.Timer.stamp();
