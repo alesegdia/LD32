@@ -5046,7 +5046,7 @@ Main.prototype = $extend(luxe.Game.prototype,{
 			if(GlobalParams.hasWon) GlobalParams.endTex = Luxe.loadTexture("assets/win.png"); else GlobalParams.endTex = Luxe.loadTexture("assets/gameover.png");
 			this.gameover.set_texture(GlobalParams.endTex);
 			this.gameover.set_visible(true);
-			this.statsText.set_text("Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" + "Money spent in bribes " + GlobalParams.sobornoMoney + "€\n" + "Money stolen by law " + GlobalParams.stolenMoney + "€\n" + "Money drawn from bank " + GlobalParams.bankMoney + "€\n" + "Final money " + this.player.money + "€\n");
+			this.statsText.set_text("Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" + "Money spent in bribes " + GlobalParams.sobornoMoney + "€\n" + "Money lost in fines " + GlobalParams.stolenMoney + "€\n" + "Money drawn from bank " + GlobalParams.bankMoney + "€\n" + "Final money " + this.player.money + "€\n");
 			this.statsText.set_visible(true);
 		}
 		if(this.okgo) {

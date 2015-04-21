@@ -476,7 +476,7 @@ class Main extends luxe.Game {
 
 			statsText.text = "Money spent with credit card " + GlobalParams.creditCardMoney + "€\n" +
 							 "Money spent in bribes " + GlobalParams.sobornoMoney + "€\n" +
-							 "Money stolen by law " + GlobalParams.stolenMoney + "€\n" +
+							 "Money lost in fines " + GlobalParams.stolenMoney + "€\n" +
 							 "Money drawn from bank " + GlobalParams.bankMoney + "€\n" +
 							 "Final money " + player.money + "€\n";
 			statsText.visible = true;
