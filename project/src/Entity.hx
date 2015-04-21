@@ -370,6 +370,8 @@ class Cajero extends Entity {
 		body.space = Luxe.physics.nape.space;
 		sprite.visible = true;
 		body.position.y = -1000;
+		//Luxe.audio.play("cajero");
+		Luxe.audio.play("cajeroopen");
 	}
 
 	public function Hide() {
@@ -383,6 +385,7 @@ class Cajero extends Entity {
 		for( i in 0 ... Math.round(howMuch) ) {
 			EntityFactory.SpawnMoneyBag(480, 320);
 		}
+		Luxe.audio.play("cajeroopen");
 	}
 
 	override public function update() {
@@ -764,7 +767,7 @@ class GlobalParams {
 class Boss extends Entity {
 
 	var facing : Vector = new Vector(0,0);
-	var health : Int = 10000;
+	var health : Int = 100;
 	var attackRate : Float = 0.5;
 	var attackPower : Int = 100000;
 	var nextAttack : Float = haxe.Timer.stamp();
@@ -813,11 +816,10 @@ class Boss extends Entity {
 			if( Math.abs(Player.position.x - body.position.x) < 384/2 && Math.abs(Player.position.y - body.position.y-32 ) < 32 ) {
 				Player.damageDealt += 100000;
 				GlobalParams.stolenMoney += 100000;
-				
 			}
 			GlobalParams.shakeAmount = 100;
 			GlobalParams.numStep += 1;
-			if( (GlobalParams.numStep%3) == 0 ) {
+			if( (GlobalParams.numStep%5) == 0 ) {
 				GlobalParams.SpawnRandomEnemy();
 			}
 			var step : Sprite = new Sprite({

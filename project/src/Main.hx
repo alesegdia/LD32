@@ -121,7 +121,6 @@ class Main extends luxe.Game {
 		var n:Int = Math.round(RandomRange(0, pickupSpawnList.length-1));
 		var e = pickupSpawnList[n];
 		var r = Math.random();
-		EntityFactory.SpawnCreditCardPickup(e.x+100, e.y);
 		if( r < 0.5 ) EntityFactory.Spawn100EPickup(e.x*32+16, e.y*32+16);
 		else if( r < 0.75 ) EntityFactory.Spawn200EPickup(e.x*32+16, e.y*32+16);
 		else if( r < 0.9 ) EntityFactory.Spawn500EPickup(e.x*32+16, e.y*32+16);
@@ -333,6 +332,8 @@ class Main extends luxe.Game {
 					Luxe.audio.create("assets/explo.wav", "explo");
 					Luxe.audio.create("assets/pickup.wav", "pickup");
 					Luxe.audio.create("assets/cc.wav", "cc");
+					Luxe.audio.create("assets/cajeroopen.wav", "cajeroopen");
+					Luxe.audio.create("assets/cajero.wav", "cajero");
 				}});
 
 			preload.load();
@@ -490,7 +491,7 @@ class Main extends luxe.Game {
 				{
 					if(!cajeroComing) {
 						cajeroComing = true;
-						haxe.Timer.delay(function() { OpenAllDoors(); GlobalParams.shakeAmount += 300; cajero.Show(); } ,2000);
+						haxe.Timer.delay(function() { OpenAllDoors(); GlobalParams.shakeAmount += 300; cajero.Show();  } ,2000);
 					}
 				}
 				trace("OPEN!");

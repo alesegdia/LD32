@@ -26,6 +26,8 @@
 		{ "id": "assets/hurtenemy.wav" },
 		{ "id": "assets/explo.wav" },
 		{ "id": "assets/cc.wav" },
+		{ "id": "assets/cajero.wav" },
+		{ "id": "assets/cajeroopen.wav" },
 		{ "id": "assets/pickup.wav" }
 	]
 }
