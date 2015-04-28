@@ -500,6 +500,7 @@ class Player extends Entity {
 		body.cbTypes.add(CollisionLayers.PLAYER);
 		body.setShapeFilters(CollisionFilters.PLAYER);
 		body.setShapeMaterials(new nape.phys.Material(0,0,0,1,0));
+		body.allowRotation = false;
 
 		Luxe.input.bind_key("left", Key.left);
 		Luxe.input.bind_key("right", Key.right);
@@ -688,6 +689,7 @@ class Enemy extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.ENEMY);
 		body.setShapeFilters(CollisionFilters.ENEMY);
+		body.allowRotation = false;
 
 	}
 
@@ -854,6 +856,7 @@ class Boss extends Entity {
 		body.space = Luxe.physics.nape.space;
 		body.cbTypes.add(CollisionLayers.ENEMY);
 		body.setShapeFilters(CollisionFilters.ENEMY);
+		body.allowRotation = false;
 	}
 
 	var speedx = 75;
